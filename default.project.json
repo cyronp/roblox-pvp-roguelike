@@ -1,0 +1,56 @@
+{
+  "name": "Test",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "RevolverFire": {
+        "$className": "RemoteEvent"
+      }
+    },
+
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "ServerStorage": {
+      "Revolver": {
+        "$className": "Tool",
+        "$properties": {
+          "CanBeDropped": false,
+          "RequiresHandle": true,
+          "ToolTip": "Six shots; reloads automatically"
+        },
+        "Handle": {
+          "$className": "Part",
+          "$properties": {
+            "Size": [0.35, 0.85, 0.35],
+            "Color": [0.24, 0.13, 0.08],
+            "Material": "Wood",
+            "CanCollide": false,
+            "Massless": true
+          }
+        },
+        "Client": {
+          "$path": "src/tools/Revolver.client.luau"
+        }
+      }
+    },
+    "StarterPlayer": {
+      "$properties": {
+        "CameraMode": "Classic",
+        "CameraMinZoomDistance": 5
+      },
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    }
+  }
+}
