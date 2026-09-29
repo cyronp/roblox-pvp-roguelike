@@ -5,12 +5,13 @@ local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local fireRemote = ReplicatedStorage:WaitForChild("RevolverFire") :: RemoteEvent
+local killConfirmedRemote = ReplicatedStorage:WaitForChild("KillConfirmed") :: RemoteEvent
 local revolverTemplate = ServerStorage:WaitForChild("Revolver") :: Tool
 
 local DAMAGE = 35
 local RANGE = 300
 local MAX_AMMO = 6
-local FIRE_INTERVAL = 0.45
+local FIRE_INTERVAL = 0.7
 local RELOAD_TIME = 1.8
 
 type RevolverState = {
@@ -292,6 +293,12 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 	state.ammo -= 1
 	tool:SetAttribute("Ammo", state.ammo)
 
+	-- Play only accepted shots; the handle makes the sound positional for nearby players.
+	local fireSound = toolHandle:FindFirstChild("FireSound")
+	if fireSound and fireSound:IsA("Sound") and fireSound.SoundId ~= "" then
+		fireSound:Play()
+	end
+
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.FilterDescendantsInstances = { character }
@@ -305,6 +312,10 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 		local targetHumanoid = if hitModel then hitModel:FindFirstChildOfClass("Humanoid") else nil
 		if targetHumanoid and targetHumanoid ~= humanoid and targetHumanoid.Health > 0 then
 			targetHumanoid:TakeDamage(DAMAGE)
+			-- Check the actual result so protected targets and existing corpses cannot award kills.
+			if targetHumanoid.Health <= 0 then
+				killConfirmedRemote:FireClient(player)
+			end
 		end
 	end
 

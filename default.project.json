@@ -7,8 +7,25 @@
       "Shared": {
         "$path": "src/shared"
       },
+      "Packages": {
+        "$path": "Packages"
+      },
       "RevolverFire": {
         "$className": "RemoteEvent"
+      },
+      "KillConfirmed": {
+        "$className": "RemoteEvent"
+      }
+    },
+
+    "SoundService": {
+      "KillConfirmation": {
+        "$className": "Sound",
+        "$properties": {
+          "SoundId": "rbxassetid://83811330659090",
+          "Volume": 0.65,
+          "Looped": false
+        }
       }
     },
 
@@ -34,10 +51,24 @@
             "Material": "Wood",
             "CanCollide": false,
             "Massless": true
+          },
+          "FireSound": {
+            "$className": "Sound",
+            "$properties": {
+              "SoundId": "rbxassetid://114169781286214",
+              "Volume": 0.65,
+              "Looped": false,
+              "RollOffMode": "InverseTapered",
+              "RollOffMinDistance": 12,
+              "RollOffMaxDistance": 180
+            }
           }
         },
         "Client": {
           "$path": "src/tools/Revolver.client.luau"
+        },
+        "AmmoHud": {
+          "$path": "src/tools/RevolverAmmoHud.luau"
         }
       }
     },
@@ -47,6 +78,7 @@
         "CameraMinZoomDistance": 5
       },
       "StarterPlayerScripts": {
+        "$ignoreUnknownInstances": false,
         "Client": {
           "$path": "src/client"
         }

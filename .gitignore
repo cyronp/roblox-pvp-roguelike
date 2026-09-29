@@ -6,3 +6,6 @@
 /*.rbxl.lock
 
 sourcemap.json
+
+# Wally downloads these from wally.toml and wally.lock.
+/Packages/

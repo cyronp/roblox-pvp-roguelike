@@ -4,57 +4,38 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local tool = script.Parent :: Tool
 local fireRemote = ReplicatedStorage:WaitForChild("RevolverFire") :: RemoteEvent
+local packages = ReplicatedStorage:WaitForChild("Packages")
+local React = require(packages:WaitForChild("React"))
+local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
+local AmmoHud = require(tool:WaitForChild("AmmoHud"))
 
 local RANGE = 300
-local MAX_AMMO = 6
-local FIRE_INTERVAL = 0.45
+local FIRE_INTERVAL = 0.7
 local lastShotAt = -math.huge
 
-local ammoGui = Instance.new("ScreenGui")
-ammoGui.Name = "RevolverAmmo"
-ammoGui.ResetOnSpawn = false
-ammoGui.Enabled = false
-ammoGui.Parent = player:WaitForChild("PlayerGui")
+player:SetAttribute("RevolverCooldownDuration", FIRE_INTERVAL)
 
-local ammoLabel = Instance.new("TextLabel")
-ammoLabel.Name = "Ammo"
-ammoLabel.AnchorPoint = Vector2.new(0.5, 1)
-ammoLabel.Position = UDim2.new(0.5, 0, 1, -70)
-ammoLabel.Size = UDim2.fromOffset(160, 36)
-ammoLabel.BackgroundTransparency = 1
-ammoLabel.Font = Enum.Font.GothamBold
-ammoLabel.TextSize = 24
-ammoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-ammoLabel.TextStrokeColor3 = Color3.fromRGB(20, 20, 20)
-ammoLabel.TextStrokeTransparency = 0.25
-ammoLabel.Parent = ammoGui
+local reticle = player:WaitForChild("PlayerGui"):WaitForChild("Crosshair"):WaitForChild("Reticle")
+local ammoContainer = Instance.new("Frame")
+ammoContainer.Name = "RevolverAmmo"
+ammoContainer.Size = UDim2.fromScale(1, 1)
+ammoContainer.BackgroundTransparency = 1
+ammoContainer.Visible = false
+ammoContainer.Parent = reticle
 
-local function updateAmmo()
-	if tool:GetAttribute("Reloading") == true then
-		ammoLabel.Text = "RELOADING"
-		return
-	end
-
-	local ammo = tool:GetAttribute("Ammo")
-	local count = if typeof(ammo) == "number" then ammo else MAX_AMMO
-	ammoLabel.Text = `{count} / {MAX_AMMO}`
-end
-
-tool:GetAttributeChangedSignal("Ammo"):Connect(updateAmmo)
-tool:GetAttributeChangedSignal("Reloading"):Connect(updateAmmo)
-updateAmmo()
+local ammoRoot = ReactRoblox.createRoot(ammoContainer)
+ammoRoot:render(React.createElement(AmmoHud, { tool = tool }))
 
 tool.Equipped:Connect(function()
-	updateAmmo()
-	ammoGui.Enabled = true
+	ammoContainer.Visible = true
 end)
 
 tool.Unequipped:Connect(function()
-	ammoGui.Enabled = false
+	ammoContainer.Visible = false
 end)
 
 if tool.Parent == player.Character then
-	ammoGui.Enabled = true
+	ammoContainer.Visible = true
 end
 
 tool.Activated:Connect(function()
@@ -86,9 +67,11 @@ tool.Activated:Connect(function()
 	local aimPoint = if result then result.Position else aimRay.Origin + aimRay.Direction * RANGE
 
 	lastShotAt = now
+	player:SetAttribute("RevolverCooldownEnd", now + FIRE_INTERVAL)
 	fireRemote:FireServer(tool, aimPoint)
 end)
 
 tool.Destroying:Connect(function()
-	ammoGui:Destroy()
+	ammoRoot:unmount()
+	ammoContainer:Destroy()
 end)

@@ -1,11 +1,34 @@
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local CROSSHAIR_COLOR = Color3.fromRGB(255, 255, 255)
+local COOLDOWN_COLOR = Color3.fromRGB(180, 184, 190)
+local COOLDOWN_DIAMETER = 44
+local COOLDOWN_RADIUS = COOLDOWN_DIAMETER / 2
+local COOLDOWN_SEGMENT_COUNT = 48
 local CAMERA_OFFSET = Vector3.new(1.75, 1, 0)
+
+-- Disabling the backpack also disables its inventory and tool-switching controls.
+-- Retry during startup in case Roblox's core UI is still initializing.
+task.spawn(function()
+	for attempt = 1, 5 do
+		local success, message = pcall(function()
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+		end)
+		if success then
+			return
+		end
+		if attempt == 5 then
+			warn(`Failed to hide the inventory: {message}`)
+			return
+		end
+		task.wait(0.5)
+	end
+end)
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "Crosshair"
@@ -45,6 +68,93 @@ addMark("Bottom", 8, 12, 1, 5)
 addMark("Left", 4, 8, 5, 1)
 addMark("Right", 12, 8, 5, 1)
 
+local cooldownRing = Instance.new("Frame")
+cooldownRing.Name = "ShotCooldown"
+cooldownRing.AnchorPoint = Vector2.new(0.5, 0.5)
+cooldownRing.Position = UDim2.fromOffset(8, 8)
+cooldownRing.Size = UDim2.fromOffset(COOLDOWN_DIAMETER, COOLDOWN_DIAMETER)
+cooldownRing.BackgroundTransparency = 1
+cooldownRing.Visible = false
+cooldownRing.Parent = crosshair
+
+local cooldownCorner = Instance.new("UICorner")
+cooldownCorner.CornerRadius = UDim.new(1, 0)
+cooldownCorner.Parent = cooldownRing
+
+local cooldownStroke = Instance.new("UIStroke")
+cooldownStroke.Color = CROSSHAIR_COLOR
+cooldownStroke.Thickness = 2
+cooldownStroke.Transparency = 0.78
+cooldownStroke.Parent = cooldownRing
+
+local cooldownSegments: { Frame } = {}
+for index = 1, COOLDOWN_SEGMENT_COUNT do
+	local angle = -math.pi / 2 + (index - 0.5) * 2 * math.pi / COOLDOWN_SEGMENT_COUNT
+	local segment = Instance.new("Frame")
+	segment.Name = `Segment{index}`
+	segment.AnchorPoint = Vector2.new(0.5, 0.5)
+	segment.Position = UDim2.fromOffset(
+		COOLDOWN_RADIUS + math.cos(angle) * COOLDOWN_RADIUS,
+		COOLDOWN_RADIUS + math.sin(angle) * COOLDOWN_RADIUS
+	)
+	segment.Size = UDim2.fromOffset(3.3, 2.5)
+	segment.Rotation = math.deg(angle) + 90
+	segment.BackgroundColor3 = COOLDOWN_COLOR
+	segment.BorderSizePixel = 0
+	segment.Visible = false
+	segment.Parent = cooldownRing
+	cooldownSegments[index] = segment
+end
+
+local cooldownTip = Instance.new("Frame")
+cooldownTip.Name = "ProgressTip"
+cooldownTip.AnchorPoint = Vector2.new(0.5, 0.5)
+cooldownTip.Size = UDim2.fromOffset(5, 5)
+cooldownTip.BackgroundColor3 = COOLDOWN_COLOR
+cooldownTip.BorderSizePixel = 0
+cooldownTip.Parent = cooldownRing
+
+local tipCorner = Instance.new("UICorner")
+tipCorner.CornerRadius = UDim.new(1, 0)
+tipCorner.Parent = cooldownTip
+
+local visibleSegmentCount = 0
+
+local function setVisibleSegments(count: number)
+	for index = visibleSegmentCount + 1, count do
+		cooldownSegments[index].Visible = true
+	end
+	for index = count + 1, visibleSegmentCount do
+		cooldownSegments[index].Visible = false
+	end
+	visibleSegmentCount = count
+end
+
+local function updateCooldownRing()
+	local endsAt = player:GetAttribute("RevolverCooldownEnd")
+	local duration = player:GetAttribute("RevolverCooldownDuration")
+	if typeof(endsAt) ~= "number" or typeof(duration) ~= "number" or duration <= 0 then
+		cooldownRing.Visible = false
+		return
+	end
+
+	local remaining = endsAt - os.clock()
+	local character = player.Character
+	if remaining <= 0 or not character or not character:FindFirstChild("Revolver") then
+		cooldownRing.Visible = false
+		return
+	end
+
+	cooldownRing.Visible = true
+	local progress = math.clamp(1 - remaining / duration, 0, 1)
+	setVisibleSegments(math.ceil(progress * COOLDOWN_SEGMENT_COUNT))
+	local tipAngle = -math.pi / 2 + progress * 2 * math.pi
+	cooldownTip.Position = UDim2.fromOffset(
+		COOLDOWN_RADIUS + math.cos(tipAngle) * COOLDOWN_RADIUS,
+		COOLDOWN_RADIUS + math.sin(tipAngle) * COOLDOWN_RADIUS
+	)
+end
+
 local humanoid: Humanoid? = nil
 local rootPart: BasePart? = nil
 
@@ -79,6 +189,9 @@ RunService:BindToRenderStep("ThirdPersonAim", Enum.RenderPriority.Camera.Value +
 		or UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt)
 		or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt)
 	crosshair.Visible = active and not usingMenu
+	if crosshair.Visible then
+		updateCooldownRing()
+	end
 
 	if not active or usingMenu or not currentRootPart then
 		UserInputService.MouseIconEnabled = true
