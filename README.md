@@ -56,12 +56,63 @@ to this audio too. The server notifies only the shooter when their revolver hit
 reduces a living target to zero health. Nonlethal hits, protected targets, and
 shots at dead targets do not trigger the confirmation.
 
-On Play, a stationary **Training Dummy** appears 24 studs in front of the first
-SpawnLocation, facing it. With no SpawnLocation, it appears near `(0, 3, -24)`;
-the script adjusts its height to the ground. It has 100 health, takes three
-revolver hits to kill, and respawns after three seconds.
+On Play, three stationary **Training Dummies** appear 24 studs in front of the
+first SpawnLocation, facing it. The original stays in the center, with two
+more 10 studs to either side. With no SpawnLocation, the center dummy appears
+near `(0, 3, -24)`; each dummy's height is adjusted to its own ground position.
+Each has 100 health, takes three revolver hits to kill, and respawns independently
+after three seconds.
 
 To verify in Studio, restart Rojo and Play, shoot the dummy three times, and
 check that only the last hit plays the kill sound. Repeat after it respawns.
 With two players, check that only the player landing the final shot hears the
 confirmation. The same confirmation applies to player kills.
+
+## Consecutive-hit damage popup
+
+Revolver hits display that enemy's cumulative damage as a white number with
+a black outline at its upper right. A `1x`, `2x`, `3x` hit streak appears below
+and to the right of the final capacity number in the ammo HUD: 1–3x is white, 4–6x blue, 7–8x
+orange, and 9x or higher uses a fire gradient with animated embers. Its
+countdown bar sits tightly underneath and uses the same color tier. On each
+hit, the damage number snaps from a slight shrink to roughly 1.6–1.7 times
+its normal size, then bounces back with a brief tilt, warm flash, and thicker
+outline. It kicks upward quickly before drifting; the hit counter also gets
+a stronger bounce. All feedback is visible only to the shooter.
+
+Every shot deals the same 35 base damage. Consecutive hits add damage dealt
+to the displayed total without increasing damage per shot. A countdown bar
+shows the time left until the server's expiration timestamp. Each hit
+refreshes the window: 4 seconds initially, shortened by 0.15 seconds per hit,
+down to a 3.5-second minimum. The revolver takes 2.5 seconds from its last shot
+to reload completion (0.7-second delay plus 1.8-second reload), leaving about
+one second to aim before the streak expires. Every confirmed damaging hit increments the
+streak, including hits on different enemies. Misses and protected targets
+do not increment it and leave the existing countdown running. Enemy death,
+respawn, and target switching preserve the streak until its
+existing deadline. Training dummies retain a server-assigned `DamageStreakId`
+across replacement models, and enemy players use their Player identity.
+Other respawning NPCs can opt in by keeping a unique `DamageStreakId` attribute.
+Timer expiry or shooter death/respawn resets the streak. Damage totals remain
+specific to each target and expire independently. Reloading preserves a streak
+only if the next hit lands before its deadline. The final hit's total stays
+visible briefly; overkill is excluded from the displayed damage. All damage,
+streak, and expiration calculations run on the server. Tuning values are in
+`src/shared/DamageStreakConfig.luau`.
+
+Restart Rojo to sync the HUD modules, then restart Play. Hit the training
+dummy three times: the feedback should show
+`35 / 1x`, `70 / 2x`, then `100 / 3x` with one kill confirmation. The damage
+appears at the dummy's upper right and the count at the ammo capacity's lower right. Shoot another
+dummy before the deadline to see `35` above that dummy and `4x` under the ammo.
+In a separate run, shoot the same dummy promptly after it respawns to continue
+at `135 / 4x`; verify that each
+dummy respawns in its own position without affecting the others. Miss between
+hits and verify that the countdown continues without incrementing. Wait for
+expiry to check the reset. Alternate between the three dummies to inspect every
+color tier and the fire effect. With two players, verify that counters are independent
+and only the shooter sees their feedback.
+Move the target and camera to verify that the popup stays at the enemy's upper right.
+Check target removal, death/respawn, and a small mobile viewport too.
+Continue shooting through the reloads at 6x and 12x to verify the streak can
+reach 13x and beyond, then wait out the countdown to verify it still resets.

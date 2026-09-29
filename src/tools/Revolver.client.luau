@@ -8,6 +8,7 @@ local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local AmmoHud = require(tool:WaitForChild("AmmoHud"))
+local DamageHud = require(tool:WaitForChild("DamageHud"))
 
 local RANGE = 300
 local FIRE_INTERVAL = 0.7
@@ -16,26 +17,29 @@ local lastShotAt = -math.huge
 player:SetAttribute("RevolverCooldownDuration", FIRE_INTERVAL)
 
 local reticle = player:WaitForChild("PlayerGui"):WaitForChild("Crosshair"):WaitForChild("Reticle")
-local ammoContainer = Instance.new("Frame")
-ammoContainer.Name = "RevolverAmmo"
-ammoContainer.Size = UDim2.fromScale(1, 1)
-ammoContainer.BackgroundTransparency = 1
-ammoContainer.Visible = false
-ammoContainer.Parent = reticle
+local hudContainer = Instance.new("Frame")
+hudContainer.Name = "RevolverHud"
+hudContainer.Size = UDim2.fromScale(1, 1)
+hudContainer.BackgroundTransparency = 1
+hudContainer.Visible = false
+hudContainer.Parent = reticle
 
-local ammoRoot = ReactRoblox.createRoot(ammoContainer)
-ammoRoot:render(React.createElement(AmmoHud, { tool = tool }))
+local hudRoot = ReactRoblox.createRoot(hudContainer)
+hudRoot:render(React.createElement(React.Fragment, nil, {
+	Ammo = React.createElement(AmmoHud, { tool = tool }),
+	Damage = React.createElement(DamageHud, { tool = tool }),
+}))
 
 tool.Equipped:Connect(function()
-	ammoContainer.Visible = true
+	hudContainer.Visible = true
 end)
 
 tool.Unequipped:Connect(function()
-	ammoContainer.Visible = false
+	hudContainer.Visible = false
 end)
 
 if tool.Parent == player.Character then
-	ammoContainer.Visible = true
+	hudContainer.Visible = true
 end
 
 tool.Activated:Connect(function()
@@ -72,6 +76,6 @@ tool.Activated:Connect(function()
 end)
 
 tool.Destroying:Connect(function()
-	ammoRoot:unmount()
-	ammoContainer:Destroy()
+	hudRoot:unmount()
+	hudContainer:Destroy()
 end)

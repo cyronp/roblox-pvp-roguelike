@@ -6,9 +6,10 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local fireRemote = ReplicatedStorage:WaitForChild("RevolverFire") :: RemoteEvent
 local killConfirmedRemote = ReplicatedStorage:WaitForChild("KillConfirmed") :: RemoteEvent
+local hitConfirmedRemote = ReplicatedStorage:WaitForChild("HitConfirmed") :: RemoteEvent
 local revolverTemplate = ServerStorage:WaitForChild("Revolver") :: Tool
+local DamageStreak = require(script:WaitForChild("DamageStreak"))
 
-local DAMAGE = 35
 local RANGE = 300
 local MAX_AMMO = 6
 local FIRE_INTERVAL = 0.7
@@ -107,6 +108,7 @@ local function onPlayerAdded(player: Player)
 			return
 		end
 		lastCharacter = character
+		DamageStreak.Reset(player)
 		watchTools(character)
 		task.spawn(function()
 			local humanoid = character:WaitForChild("Humanoid", 10)
@@ -115,6 +117,11 @@ local function onPlayerAdded(player: Player)
 			if not humanoid or not humanoid:IsA("Humanoid") or not root or not backpack then
 				return
 			end
+			humanoid.Died:Once(function()
+				if player.Character == character then
+					DamageStreak.Reset(player)
+				end
+			end)
 
 			while player.Character == character and not character:IsDescendantOf(workspace) do
 				character.AncestryChanged:Wait()
@@ -142,6 +149,9 @@ local function onPlayerAdded(player: Player)
 	end
 
 	player.CharacterAdded:Connect(onCharacterAdded)
+	player.CharacterRemoving:Connect(function()
+		DamageStreak.Reset(player)
+	end)
 	if player.Character then
 		onCharacterAdded(player.Character)
 	end
@@ -149,6 +159,7 @@ local function onPlayerAdded(player: Player)
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(DamageStreak.Reset)
 for _, player in Players:GetPlayers() do
 	task.spawn(onPlayerAdded, player)
 end
@@ -307,15 +318,21 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 	local hitPosition = if result then result.Position else origin + rayDirection
 	showShot(origin, hitPosition)
 
+	local feedback: DamageStreak.HitFeedback? = nil
+	local hitTarget: Model? = nil
 	if result then
 		local hitModel = result.Instance:FindFirstAncestorOfClass("Model")
 		local targetHumanoid = if hitModel then hitModel:FindFirstChildOfClass("Humanoid") else nil
 		if targetHumanoid and targetHumanoid ~= humanoid and targetHumanoid.Health > 0 then
-			targetHumanoid:TakeDamage(DAMAGE)
-			-- Check the actual result so protected targets and existing corpses cannot award kills.
-			if targetHumanoid.Health <= 0 then
-				killConfirmedRemote:FireClient(player)
-			end
+			feedback = DamageStreak.ApplyHit(player, character, targetHumanoid, workspace:GetServerTimeNow())
+			hitTarget = hitModel
+		end
+	end
+
+	if feedback then
+		hitConfirmedRemote:FireClient(player, tool, feedback.hitCount, feedback.totalDamage, hitTarget, feedback.expiresAt, feedback.duration)
+		if feedback.killed then
+			killConfirmedRemote:FireClient(player)
 		end
 	end
 

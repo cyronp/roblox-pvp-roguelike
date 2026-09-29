@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
+local StreakHud = require(script.Parent:WaitForChild("StreakHud"))
 local e = React.createElement
 
 local MAX_AMMO = 6
@@ -110,6 +111,7 @@ local function AmmoHud(props: Props)
 			TextStrokeTransparency = 0.3,
 			TextXAlignment = Enum.TextXAlignment.Left,
 		}),
+		Streak = e(StreakHud, { tool = props.tool }),
 	})
 end
 

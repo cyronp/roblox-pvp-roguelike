@@ -15,6 +15,9 @@
       },
       "KillConfirmed": {
         "$className": "RemoteEvent"
+      },
+      "HitConfirmed": {
+        "$className": "RemoteEvent"
       }
     },
 
@@ -69,6 +72,21 @@
         },
         "AmmoHud": {
           "$path": "src/tools/RevolverAmmoHud.luau"
+        },
+        "DamageHud": {
+          "$path": "src/tools/RevolverDamageHud.luau"
+        },
+        "HitCount": {
+          "$path": "src/tools/RevolverHitCount.luau"
+        },
+        "StreakTimer": {
+          "$path": "src/tools/RevolverStreakTimer.luau"
+        },
+        "StreakHud": {
+          "$path": "src/tools/RevolverStreakHud.luau"
+        },
+        "StreakColors": {
+          "$path": "src/tools/RevolverStreakColors.luau"
         }
       }
     },

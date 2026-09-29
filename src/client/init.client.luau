@@ -32,6 +32,7 @@ end)
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "Crosshair"
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.IgnoreGuiInset = true
 screenGui.ScreenInsets = Enum.ScreenInsets.None
 screenGui.ResetOnSpawn = false
