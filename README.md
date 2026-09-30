@@ -34,6 +34,24 @@ files; scripts added only in Studio under that service are removed on sync.
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).
 
+## Permanent cartoon lighting
+
+`tree.Lighting` in `default.project.json` defines the world's permanent look:
+a sunny 14:00 afternoon, a built-in blue sky, light blue atmosphere, readable
+shadows, richer colors, moderate contrast, and subtle bloom. The settings apply
+in both edit mode and Play, with no runtime lighting scripts or day/night cycle.
+The lighting uses Roblox's Soft style for a simpler cartoon appearance; see
+[Roblox's lighting reference](https://create.roblox.com/docs/environment/lighting).
+
+Rojo manages Lighting's children so existing sky and post-processing effects
+are replaced by this preset instead of stacking with it. Add future lighting
+effects to the project mapping. The map's objects and materials are unchanged.
+
+Restart `rojo serve` and reconnect the Studio plugin to apply the new mapping
+to your current world, then save the place in Studio. When opening the standalone
+`Test.rbxlx`, rebuild it first. Check the result in Play and mobile emulation;
+post-processing and shadows can vary with the client's graphics quality.
+
 ## Revolver firing audio
 
 The original gunshot is `assets/audio/revolver-shot.wav` (0.4 seconds, mono).
@@ -67,6 +85,24 @@ To verify in Studio, restart Rojo and Play, shoot the dummy three times, and
 check that only the last hit plays the kill sound. Repeat after it respawns.
 With two players, check that only the player landing the final shot hears the
 confirmation. The same confirmation applies to player kills.
+
+## XP and levels
+
+A blue gradient XP bar spans the bottom of the screen, with the current LVL and
+XP count above it. Players start at LVL 1 with 0 XP. Every server-confirmed kill
+(including training dummies) grants 25 XP to the player landing the final shot.
+The first level needs 100 XP; each subsequent level needs 50 more (150, 200,
+250, and so on). Extra XP carries into the next level. Death immediately resets
+the level to 1 and XP to 0; respawning and reconnecting also start a fresh life.
+
+Balance values live in `src/shared/ExperienceConfig.luau`. XP is awarded and
+tracked on the server; the client only displays replicated progress.
+
+To verify in Studio, kill four dummies to reach LVL 2, then kill six more to
+reach LVL 3. Reset your character and check for LVL 1 and an empty bar. With
+two players, confirm that only the final shooter receives XP, dead targets and
+nonlethal hits grant none, and one player's death does not reset the other.
+Check the bottom bar and label with desktop and mobile device emulation.
 
 ## Consecutive-hit damage popup
 

@@ -3,6 +3,71 @@
   "tree": {
     "$className": "DataModel",
 
+    "Lighting": {
+      "$className": "Lighting",
+      "$ignoreUnknownInstances": false,
+      "$properties": {
+        "LightingStyle": "Soft",
+        "PrioritizeLightingQuality": false,
+        "ClockTime": 14,
+        "GeographicLatitude": 35,
+        "Brightness": 2.5,
+        "ExposureCompensation": 0.05,
+        "GlobalShadows": true,
+        "Ambient": [0.28, 0.32, 0.4],
+        "OutdoorAmbient": [0.55, 0.59, 0.67],
+        "ColorShift_Top": [0.06, 0.035, 0],
+        "ColorShift_Bottom": [0, 0, 0],
+        "EnvironmentDiffuseScale": 0.35,
+        "EnvironmentSpecularScale": 0.25
+      },
+      "Sky": {
+        "$className": "Sky",
+        "$properties": {
+          "SkyboxBk": "rbxasset://textures/sky/sky512_bk.tex",
+          "SkyboxDn": "rbxasset://textures/sky/sky512_dn.tex",
+          "SkyboxFt": "rbxasset://textures/sky/sky512_ft.tex",
+          "SkyboxLf": "rbxasset://textures/sky/sky512_lf.tex",
+          "SkyboxRt": "rbxasset://textures/sky/sky512_rt.tex",
+          "SkyboxUp": "rbxasset://textures/sky/sky512_up.tex",
+          "CelestialBodiesShown": true,
+          "StarCount": 0,
+          "SunAngularSize": 12,
+          "MoonAngularSize": 0
+        }
+      },
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Color": [0.7, 0.85, 1],
+          "Decay": [0.38, 0.53, 0.8],
+          "Density": 0.22,
+          "Offset": 0.15,
+          "Haze": 0.6,
+          "Glare": 0.08
+        }
+      },
+      "ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Enabled": true,
+          "Brightness": 0.015,
+          "Contrast": 0.15,
+          "Saturation": 0.22,
+          "TintColor": [1, 0.99, 0.97]
+        }
+      },
+      "Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Enabled": true,
+          "Intensity": 0.08,
+          "Size": 16,
+          "Threshold": 1.5
+        }
+      }
+    },
+
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"

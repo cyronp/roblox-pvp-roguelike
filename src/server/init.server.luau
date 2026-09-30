@@ -9,6 +9,7 @@ local killConfirmedRemote = ReplicatedStorage:WaitForChild("KillConfirmed") :: R
 local hitConfirmedRemote = ReplicatedStorage:WaitForChild("HitConfirmed") :: RemoteEvent
 local revolverTemplate = ServerStorage:WaitForChild("Revolver") :: Tool
 local DamageStreak = require(script:WaitForChild("DamageStreak"))
+local Experience = require(script:WaitForChild("Experience"))
 
 local RANGE = 300
 local MAX_AMMO = 6
@@ -102,6 +103,7 @@ local function equipRevolver(player: Player, character: Model, humanoid: Humanoi
 end
 
 local function onPlayerAdded(player: Player)
+	Experience.Reset(player)
 	local lastCharacter: Model? = nil
 	local function onCharacterAdded(character: Model)
 		if lastCharacter == character then
@@ -109,19 +111,24 @@ local function onPlayerAdded(player: Player)
 		end
 		lastCharacter = character
 		DamageStreak.Reset(player)
+		Experience.Reset(player)
 		watchTools(character)
 		task.spawn(function()
 			local humanoid = character:WaitForChild("Humanoid", 10)
-			local root = character:WaitForChild("HumanoidRootPart", 10)
-			local backpack = player:WaitForChild("Backpack", 10)
-			if not humanoid or not humanoid:IsA("Humanoid") or not root or not backpack then
+			if not humanoid or not humanoid:IsA("Humanoid") or player.Character ~= character then
 				return
 			end
 			humanoid.Died:Once(function()
 				if player.Character == character then
 					DamageStreak.Reset(player)
+					Experience.Reset(player)
 				end
 			end)
+			local root = character:WaitForChild("HumanoidRootPart", 10)
+			local backpack = player:WaitForChild("Backpack", 10)
+			if not root or not backpack then
+				return
+			end
 
 			while player.Character == character and not character:IsDescendantOf(workspace) do
 				character.AncestryChanged:Wait()
@@ -151,6 +158,7 @@ local function onPlayerAdded(player: Player)
 	player.CharacterAdded:Connect(onCharacterAdded)
 	player.CharacterRemoving:Connect(function()
 		DamageStreak.Reset(player)
+		Experience.Reset(player)
 	end)
 	if player.Character then
 		onCharacterAdded(player.Character)
@@ -159,7 +167,10 @@ local function onPlayerAdded(player: Player)
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
-Players.PlayerRemoving:Connect(DamageStreak.Reset)
+Players.PlayerRemoving:Connect(function(player: Player)
+	DamageStreak.Reset(player)
+	Experience.RemovePlayer(player)
+end)
 for _, player in Players:GetPlayers() do
 	task.spawn(onPlayerAdded, player)
 end
@@ -332,6 +343,7 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 	if feedback then
 		hitConfirmedRemote:FireClient(player, tool, feedback.hitCount, feedback.totalDamage, hitTarget, feedback.expiresAt, feedback.duration)
 		if feedback.killed then
+			Experience.AwardKill(player)
 			killConfirmedRemote:FireClient(player)
 		end
 	end
