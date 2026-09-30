@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local hitConfirmedRemote = ReplicatedStorage:WaitForChild("HitConfirmed") :: RemoteEvent
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -188,7 +189,7 @@ local function DamageHud(props: Props)
 					AutomaticSize = Enum.AutomaticSize.X,
 					Size = UDim2.fromOffset(0, 64),
 					BackgroundTransparency = 1,
-					Font = Enum.Font.GothamBold,
+					FontFace = UIFonts.ExtraBold,
 					Text = string.format("%.0f", feedback.totalDamage),
 					TextSize = math.min(48 + (feedback.hitCount - 1), 56),
 					TextColor3 = Color3.fromRGB(255, 255, 255),

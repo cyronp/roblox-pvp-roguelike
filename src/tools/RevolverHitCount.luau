@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local getGradient = require(script.Parent:WaitForChild("StreakColors"))
 local e = React.createElement
 
@@ -72,7 +73,7 @@ local function HitCount(props: Props)
 	return e("TextLabel", {
 		Size = UDim2.fromOffset(52, 38),
 		BackgroundTransparency = 1,
-		Font = Enum.Font.GothamBold,
+		FontFace = UIFonts.ExtraBold,
 		Text = `{props.count}x`,
 		TextSize = 24,
 		TextColor3 = Color3.fromRGB(255, 255, 255),

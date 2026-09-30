@@ -8,7 +8,15 @@ local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ExperienceConfig"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local e = React.createElement
+
+local BAR_HEIGHT = 24
+local BLUE_GRADIENT = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 90, 225)),
+	ColorSequenceKeypoint.new(0.55, Color3.fromRGB(40, 155, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(95, 215, 255)),
+})
 
 type Progress = { level: number, xp: number }
 
@@ -85,7 +93,7 @@ local function ExperienceHud()
 			Track = e("Frame", {
 				AnchorPoint = Vector2.new(0, 1),
 				Position = UDim2.fromScale(0, 1),
-				Size = UDim2.new(1, 0, 0, 12),
+				Size = UDim2.new(1, 0, 0, BAR_HEIGHT),
 				BackgroundColor3 = Color3.fromRGB(12, 24, 45),
 				BorderSizePixel = 0,
 				ClipsDescendants = true,
@@ -97,12 +105,19 @@ local function ExperienceHud()
 					BorderSizePixel = 0,
 				}, {
 					Gradient = e("UIGradient", {
-						Color = ColorSequence.new({
-							ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 90, 225)),
-							ColorSequenceKeypoint.new(0.55, Color3.fromRGB(40, 155, 255)),
-							ColorSequenceKeypoint.new(1, Color3.fromRGB(95, 215, 255)),
-						}),
+						Color = BLUE_GRADIENT,
 					}),
+				}),
+				Progress = e("TextLabel", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					FontFace = UIFonts.Bold,
+					Text = `{progress.xp}/{requiredXp}`,
+					TextColor3 = Color3.new(1, 1, 1),
+					TextSize = 14,
+					TextStrokeColor3 = Color3.fromRGB(8, 16, 30),
+					TextStrokeTransparency = 0.2,
+					ZIndex = 2,
 				}),
 			}),
 		}),
@@ -113,17 +128,23 @@ local function ExperienceHud()
 			DisplayOrder = 5,
 			ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
 		}, {
-			Progress = e("TextLabel", {
-				AnchorPoint = Vector2.new(0.5, 1),
-				Position = UDim2.new(0.5, 0, 1, -18),
-				Size = UDim2.new(1, -24, 0, 24),
+			Level = e("TextLabel", {
+				AnchorPoint = Vector2.new(1, 1),
+				Position = UDim2.new(1, -18, 1, -(BAR_HEIGHT + 8)),
+				Size = UDim2.new(1, -36, 0, 42),
 				BackgroundTransparency = 1,
-				Font = Enum.Font.GothamBold,
-				Text = `LVL {progress.level}    |    {progress.xp} / {requiredXp} XP`,
-				TextColor3 = Color3.fromRGB(215, 238, 255),
-				TextSize = 16,
-				TextStrokeColor3 = Color3.fromRGB(8, 16, 30),
-				TextStrokeTransparency = 0.2,
+				FontFace = UIFonts.ExtraBold,
+				Text = `LVL {progress.level}`,
+				TextColor3 = Color3.new(1, 1, 1),
+				TextSize = 32,
+				TextXAlignment = Enum.TextXAlignment.Right,
+			}, {
+				Gradient = e("UIGradient", { Color = BLUE_GRADIENT, Rotation = -90 }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(8, 16, 30),
+					Thickness = 2,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
+				}),
 			}),
 		}),
 	})

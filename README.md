@@ -34,6 +34,14 @@ files; scripts added only in Studio under that service are removed on sync.
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).
 
+## HUD typography
+
+The HUD uses Roblox's built-in Nunito family, defined in
+`src/shared/UIFonts.luau`: Bold for ammo and XP, ExtraBold for levels, damage and
+hit streaks, and Regular for the ammo separator and capacity. Future UI can reuse
+these fonts through the `FontFace` property. Restart Play after syncing changes;
+check text spacing in desktop and mobile emulation.
+
 ## Permanent cartoon lighting
 
 `tree.Lighting` in `default.project.json` defines the world's permanent look:
@@ -88,8 +96,9 @@ confirmation. The same confirmation applies to player kills.
 
 ## XP and levels
 
-A blue gradient XP bar spans the bottom of the screen, with the current LVL and
-XP count above it. Players start at LVL 1 with 0 XP. Every server-confirmed kill
+A blue gradient XP bar spans the bottom of the screen, with the XP count (such as
+`0/100`) centered inside it. A larger blue gradient LVL label sits at the bottom
+right above the bar, inside device safe bounds. Players start at LVL 1 with 0 XP. Every server-confirmed kill
 (including training dummies) grants 25 XP to the player landing the final shot.
 The first level needs 100 XP; each subsequent level needs 50 more (150, 200,
 250, and so on). Extra XP carries into the next level. Death immediately resets

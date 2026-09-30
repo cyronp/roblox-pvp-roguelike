@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local StreakHud = require(script.Parent:WaitForChild("StreakHud"))
 local e = React.createElement
 
@@ -80,7 +81,7 @@ local function AmmoHud(props: Props)
 			ref = countRef,
 			Size = UDim2.fromOffset(30, 24),
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamBold,
+			FontFace = UIFonts.Bold,
 			Text = string.format("%02d", ammo),
 			TextColor3 = countColor,
 			TextSize = 20,
@@ -92,7 +93,7 @@ local function AmmoHud(props: Props)
 			Position = UDim2.fromOffset(30, 2),
 			Size = UDim2.fromOffset(11, 22),
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamMedium,
+			FontFace = UIFonts.Regular,
 			Text = "/",
 			TextColor3 = Color3.fromRGB(169, 176, 187),
 			TextSize = 14,
@@ -103,7 +104,7 @@ local function AmmoHud(props: Props)
 			Position = UDim2.fromOffset(41, 3),
 			Size = UDim2.fromOffset(21, 21),
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamMedium,
+			FontFace = UIFonts.Regular,
 			Text = string.format("%02d", MAX_AMMO),
 			TextColor3 = Color3.fromRGB(204, 209, 217),
 			TextSize = 13,
