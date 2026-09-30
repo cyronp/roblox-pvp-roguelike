@@ -3,10 +3,10 @@ local TweenService = game:GetService("TweenService")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 local StreakHud = require(script.Parent:WaitForChild("StreakHud"))
 local e = React.createElement
 
-local MAX_AMMO = 6
 local GOLD = Color3.fromRGB(245, 185, 91)
 local RELOAD_COLOR = Color3.fromRGB(180, 184, 190)
 local EMPTY = Color3.fromRGB(255, 118, 105)
@@ -17,16 +17,22 @@ type Props = {
 	tool: Tool,
 }
 
+local function readCapacity(tool: Tool): number
+	local value = tool:GetAttribute("MaxAmmo")
+	return if typeof(value) == "number" then value else UpgradeConfig.BASE_AMMO
+end
+
 local function readAmmo(tool: Tool): number
 	local value = tool:GetAttribute("Ammo")
 	if typeof(value) ~= "number" then
-		return MAX_AMMO
+		return readCapacity(tool)
 	end
-	return math.clamp(math.floor(value), 0, MAX_AMMO)
+	return math.clamp(math.floor(value), 0, readCapacity(tool))
 end
 
 local function AmmoHud(props: Props)
 	local ammo, setAmmo = React.useState(readAmmo(props.tool))
+	local capacity, setCapacity = React.useState(readCapacity(props.tool))
 	local reloading, setReloading = React.useState(props.tool:GetAttribute("Reloading") == true)
 	local countRef = React.useRef(nil)
 
@@ -37,13 +43,19 @@ local function AmmoHud(props: Props)
 		local reloadConnection = props.tool:GetAttributeChangedSignal("Reloading"):Connect(function()
 			setReloading(props.tool:GetAttribute("Reloading") == true)
 		end)
+		local capacityConnection = props.tool:GetAttributeChangedSignal("MaxAmmo"):Connect(function()
+			setCapacity(readCapacity(props.tool))
+			setAmmo(readAmmo(props.tool))
+		end)
 		-- Catch changes that arrived between the first render and subscribing.
 		setAmmo(readAmmo(props.tool))
+		setCapacity(readCapacity(props.tool))
 		setReloading(props.tool:GetAttribute("Reloading") == true)
 
 		return function()
 			ammoConnection:Disconnect()
 			reloadConnection:Disconnect()
+			capacityConnection:Disconnect()
 		end
 	end, { props.tool })
 
@@ -105,7 +117,7 @@ local function AmmoHud(props: Props)
 			Size = UDim2.fromOffset(21, 21),
 			BackgroundTransparency = 1,
 			FontFace = UIFonts.Regular,
-			Text = string.format("%02d", MAX_AMMO),
+			Text = string.format("%02d", capacity),
 			TextColor3 = Color3.fromRGB(204, 209, 217),
 			TextSize = 13,
 			TextStrokeColor3 = OUTLINE,

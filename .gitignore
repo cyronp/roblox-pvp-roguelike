@@ -9,3 +9,6 @@ sourcemap.json
 
 # Wally downloads these from wally.toml and wally.lock.
 /Packages/
+
+# Python helpers used for Blender asset creation.
+__pycache__/

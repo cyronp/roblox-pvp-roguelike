@@ -69,6 +69,12 @@
     },
 
     "ReplicatedStorage": {
+      "Assets": {
+        "$className": "Folder",
+        "UpgradeCard": {
+          "$path": "assets/cards/UpgradeCard.rbxm"
+        }
+      },
       "Shared": {
         "$path": "src/shared"
       },
@@ -82,6 +88,9 @@
         "$className": "RemoteEvent"
       },
       "HitConfirmed": {
+        "$className": "RemoteEvent"
+      },
+      "ChooseUpgrade": {
         "$className": "RemoteEvent"
       }
     },

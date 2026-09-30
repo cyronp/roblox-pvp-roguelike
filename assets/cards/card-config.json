@@ -1,0 +1,11 @@
+{
+  "title": "HEAVY HITTER",
+  "description": "Every shot deals\n5 extra damage.",
+  "buff": "+5",
+  "buff_label": "DAMAGE",
+  "artwork": "heavy-hitter-cartoon.png",
+  "accent_color": "#F77B39",
+  "border_shade": 0.40,
+  "face_color": "#FFF8EC",
+  "ink_color": "#243349"
+}

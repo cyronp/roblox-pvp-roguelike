@@ -9,12 +9,10 @@ local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local AmmoHud = require(tool:WaitForChild("AmmoHud"))
 local DamageHud = require(tool:WaitForChild("DamageHud"))
+local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 
 local RANGE = 300
-local FIRE_INTERVAL = 0.7
 local lastShotAt = -math.huge
-
-player:SetAttribute("RevolverCooldownDuration", FIRE_INTERVAL)
 
 local reticle = player:WaitForChild("PlayerGui"):WaitForChild("Crosshair"):WaitForChild("Reticle")
 local hudContainer = Instance.new("Frame")
@@ -52,7 +50,9 @@ tool.Activated:Connect(function()
 	end
 
 	local now = os.clock()
-	if now - lastShotAt < FIRE_INTERVAL then
+	local interval = tool:GetAttribute("FireInterval")
+	local fireInterval = if typeof(interval) == "number" then interval else UpgradeConfig.BASE_FIRE_INTERVAL
+	if now - lastShotAt < fireInterval then
 		return
 	end
 
@@ -71,7 +71,8 @@ tool.Activated:Connect(function()
 	local aimPoint = if result then result.Position else aimRay.Origin + aimRay.Direction * RANGE
 
 	lastShotAt = now
-	player:SetAttribute("RevolverCooldownEnd", now + FIRE_INTERVAL)
+	player:SetAttribute("RevolverCooldownDuration", fireInterval)
+	player:SetAttribute("RevolverCooldownEnd", now + fireInterval)
 	fireRemote:FireServer(tool, aimPoint)
 end)
 

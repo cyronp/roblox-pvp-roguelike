@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ExperienceConfig"))
+local Upgrades = require(script.Parent:WaitForChild("Upgrades"))
 
 type Progress = {
 	level: number,
@@ -20,10 +21,12 @@ function Experience.Reset(player: Player)
 	local progress = { level = Config.START_LEVEL, xp = 0 }
 	progressByPlayer[player] = progress
 	publishProgress(player, progress)
+	Upgrades.Reset(player)
 end
 
 function Experience.RemovePlayer(player: Player)
 	progressByPlayer[player] = nil
+	Upgrades.RemovePlayer(player)
 end
 
 -- Called only by the server's confirmed lethal-hit path, never by a client remote.
@@ -36,6 +39,7 @@ function Experience.AwardKill(player: Player)
 	end
 
 	progress.xp += Config.XP_PER_KILL
+	local previousLevel = progress.level
 	local requiredXp = Config.getRequiredXp(progress.level)
 	while progress.xp >= requiredXp do
 		progress.xp -= requiredXp
@@ -44,6 +48,7 @@ function Experience.AwardKill(player: Player)
 	end
 
 	publishProgress(player, progress)
+	Upgrades.AwardLevels(player, progress.level - previousLevel)
 end
 
 return Experience

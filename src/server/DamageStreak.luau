@@ -45,7 +45,7 @@ function DamageStreak.Reset(player: Player)
 	streaks[player] = nil
 end
 
-function DamageStreak.ApplyHit(player: Player, character: Model, target: Humanoid, now: number): HitFeedback?
+function DamageStreak.ApplyHit(player: Player, character: Model, target: Humanoid, now: number, damageBonus: number?): HitFeedback?
 	if target.Health <= 0 then
 		return nil
 	end
@@ -68,7 +68,7 @@ function DamageStreak.ApplyHit(player: Player, character: Model, target: Humanoi
 	end
 
 	local healthBefore = target.Health
-	target:TakeDamage(Config.BASE_DAMAGE)
+	target:TakeDamage(Config.BASE_DAMAGE + (damageBonus or 0))
 	-- ForceFields and overkill must not inflate the displayed damage or streak.
 	local dealtDamage = math.max(0, healthBefore - target.Health)
 	if dealtDamage <= 0 then

@@ -10,16 +10,18 @@ local hitConfirmedRemote = ReplicatedStorage:WaitForChild("HitConfirmed") :: Rem
 local revolverTemplate = ServerStorage:WaitForChild("Revolver") :: Tool
 local DamageStreak = require(script:WaitForChild("DamageStreak"))
 local Experience = require(script:WaitForChild("Experience"))
+local Upgrades = require(script:WaitForChild("Upgrades"))
+local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 
 local RANGE = 300
-local MAX_AMMO = 6
-local FIRE_INTERVAL = 0.7
-local RELOAD_TIME = 1.8
 
 type RevolverState = {
 	ammo: number,
+	maxAmmo: number,
 	reloading: boolean,
 	lastShotAt: number,
+	reloadTask: thread?,
+	autoReloadTask: thread?,
 }
 
 local states: { [Tool]: RevolverState? } = {}
@@ -69,22 +71,77 @@ local function prepareRevolver(tool: Tool)
 	muzzle.Parent = handle
 
 	if tool:GetAttribute("Ammo") == nil then
-		tool:SetAttribute("Ammo", MAX_AMMO)
+		tool:SetAttribute("Ammo", UpgradeConfig.BASE_AMMO)
 		tool:SetAttribute("Reloading", false)
 	end
 end
 
 prepareRevolver(revolverTemplate)
 
-local function watchTools(container: Instance)
+local function syncWeapon(player: Player, tool: Tool, state: RevolverState)
+	local stats = Upgrades.GetWeaponStats(player)
+	local addedAmmo = math.max(0, stats.maxAmmo - state.maxAmmo)
+	state.maxAmmo = stats.maxAmmo
+	state.ammo = math.min(state.maxAmmo, state.ammo + addedAmmo)
+	tool:SetAttribute("MaxAmmo", stats.maxAmmo)
+	tool:SetAttribute("FireInterval", stats.fireInterval)
+	tool:SetAttribute("ReloadTime", stats.reloadTime)
+	tool:SetAttribute("Ammo", state.ammo)
+end
+
+local function getState(player: Player, tool: Tool): RevolverState
+	local state = states[tool]
+	if state then
+		syncWeapon(player, tool, state)
+		return state
+	end
+
+	local newState: RevolverState = {
+		ammo = UpgradeConfig.BASE_AMMO,
+		maxAmmo = UpgradeConfig.BASE_AMMO,
+		reloading = false,
+		lastShotAt = -math.huge,
+		reloadTask = nil,
+		autoReloadTask = nil,
+	}
+	states[tool] = newState
+	tool.Destroying:Connect(function()
+		if newState.reloadTask then
+			task.cancel(newState.reloadTask)
+		end
+		if newState.autoReloadTask then
+			task.cancel(newState.autoReloadTask)
+		end
+		states[tool] = nil
+	end)
+	syncWeapon(player, tool, newState)
+	tool:SetAttribute("Reloading", false)
+	return newState
+end
+
+Upgrades.Changed:Connect(function(player: Player)
+	for _, container in { player.Character, player:FindFirstChild("Backpack") } do
+		if container then
+			for _, child in container:GetChildren() do
+				if child:IsA("Tool") and child.Name == "Revolver" then
+					syncWeapon(player, child, getState(player, child))
+				end
+			end
+		end
+	end
+end)
+
+local function watchTools(player: Player, container: Instance)
 	for _, child in container:GetChildren() do
 		if child:IsA("Tool") and child.Name == "Revolver" then
 			prepareRevolver(child)
+			getState(player, child)
 		end
 	end
 	container.ChildAdded:Connect(function(child)
 		if child:IsA("Tool") and child.Name == "Revolver" then
 			prepareRevolver(child)
+			getState(player, child)
 		end
 	end)
 end
@@ -112,7 +169,7 @@ local function onPlayerAdded(player: Player)
 		lastCharacter = character
 		DamageStreak.Reset(player)
 		Experience.Reset(player)
-		watchTools(character)
+		watchTools(player, character)
 		task.spawn(function()
 			local humanoid = character:WaitForChild("Humanoid", 10)
 			if not humanoid or not humanoid:IsA("Humanoid") or player.Character ~= character then
@@ -163,7 +220,7 @@ local function onPlayerAdded(player: Player)
 	if player.Character then
 		onCharacterAdded(player.Character)
 	end
-	watchTools(player:WaitForChild("Backpack"))
+	watchTools(player, player:WaitForChild("Backpack"))
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
@@ -175,37 +232,22 @@ for _, player in Players:GetPlayers() do
 	task.spawn(onPlayerAdded, player)
 end
 
-local function getState(tool: Tool): RevolverState
-	local state = states[tool]
-	if state then
-		return state
-	end
-
-	local newState: RevolverState = { ammo = MAX_AMMO, reloading = false, lastShotAt = -math.huge }
-	states[tool] = newState
-	tool.Destroying:Connect(function()
-		states[tool] = nil
-	end)
-	tool:SetAttribute("Ammo", MAX_AMMO)
-	tool:SetAttribute("Reloading", false)
-	return newState
-end
-
-local function startReload(tool: Tool, state: RevolverState)
-	if state.reloading or state.ammo == MAX_AMMO then
+local function startReload(player: Player, tool: Tool, state: RevolverState)
+	if state.reloading or state.ammo == state.maxAmmo then
 		return
 	end
 
 	state.reloading = true
 	tool:SetAttribute("Reloading", true)
-	task.delay(RELOAD_TIME, function()
+	state.reloadTask = task.delay(Upgrades.GetWeaponStats(player).reloadTime, function()
+		state.reloadTask = nil
 		if tool.Parent == nil then
 			return
 		end
 
-		state.ammo = MAX_AMMO
+		state.ammo = state.maxAmmo
 		state.reloading = false
-		tool:SetAttribute("Ammo", MAX_AMMO)
+		tool:SetAttribute("Ammo", state.ammo)
 		tool:SetAttribute("Reloading", false)
 	end)
 end
@@ -297,17 +339,18 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 		return
 	end
 
-	local state = getState(tool)
+	local stats = Upgrades.GetWeaponStats(player)
+	local state = getState(player, tool)
 	if state.reloading then
 		return
 	end
 	if state.ammo == 0 then
-		startReload(tool, state)
+		startReload(player, tool, state)
 		return
 	end
 
 	local now = os.clock()
-	if now - state.lastShotAt < FIRE_INTERVAL then
+	if now - state.lastShotAt < stats.fireInterval then
 		return
 	end
 
@@ -335,7 +378,7 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 		local hitModel = result.Instance:FindFirstAncestorOfClass("Model")
 		local targetHumanoid = if hitModel then hitModel:FindFirstChildOfClass("Humanoid") else nil
 		if targetHumanoid and targetHumanoid ~= humanoid and targetHumanoid.Health > 0 then
-			feedback = DamageStreak.ApplyHit(player, character, targetHumanoid, workspace:GetServerTimeNow())
+			feedback = DamageStreak.ApplyHit(player, character, targetHumanoid, workspace:GetServerTimeNow(), stats.damageBonus)
 			hitTarget = hitModel
 		end
 	end
@@ -349,9 +392,13 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 	end
 
 	if state.ammo == 0 then
-		task.delay(FIRE_INTERVAL, function()
-			if tool.Parent then
-				startReload(tool, state)
+		if state.autoReloadTask then
+			task.cancel(state.autoReloadTask)
+		end
+		state.autoReloadTask = task.delay(stats.fireInterval, function()
+			state.autoReloadTask = nil
+			if tool.Parent and state.ammo == 0 then
+				startReload(player, tool, state)
 			end
 		end)
 	end

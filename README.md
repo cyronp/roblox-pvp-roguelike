@@ -113,6 +113,74 @@ two players, confirm that only the final shooter receives XP, dead targets and
 nonlethal hits grant none, and one player's death does not reset the other.
 Check the bottom bar and label with desktop and mobile device emulation.
 
+## Roguelike upgrade cards
+
+Each level-up offers three random, distinct upgrades in a compact row at the
+bottom left, above the XP bar. Press **1**, **2**, or **3** to choose; desktop
+cards do not capture clicks. Aiming, movement, firing, and reloading continue
+while choices are visible. On touch devices, tap a numbered button beneath a
+card; the row sits higher to leave room for the movement controls.
+Cards slide in one after another. After the server confirms a pick, the chosen
+card lifts and spins horizontally through a full turn around its 3D Y axis before fading away.
+Its front content follows the spin and hides while the back faces the camera. The other cards
+drop out, then the next queued offer appears.
+Typing in chat or opening the Roblox menu does not select an upgrade.
+Your owned upgrades remain visible as miniature cards at the bottom center,
+above the XP bar. A single card sits straight; two tilt outward; three keep
+the middle card straight and tilt the outer pair. Each card has a matching
+colored `N LVL` label above it. The fan updates from the server's inventory
+and clears on death. On smaller screens, choices move above the fan to avoid
+overlap. Both displays leave aiming and shooting active.
+
+The 3D shell is `assets/cards/UpgradeCard.rbxm` (uploaded model **83993627838046**),
+mapped to `ReplicatedStorage.Assets.UpgradeCard`. Each card has its own color,
+a darker border, an outlined title, description, and buff. All five currently
+use the supplied illustration **123780956272251**. Visuals are configured in
+`src/client/UpgradeCardModel.luau`; card rendering, animation, and selection
+state are separate client modules. The saved model supplies its mesh IDs,
+so the game does not need to insert a cloud model at runtime.
+
+The five upgrades, applied per card level, are:
+
+- **Heavy Hitter:** +5 weapon damage.
+- **Extra Round:** +1 magazine capacity, adding one available bullet immediately.
+- **Quick Trigger:** reduce the base shooting cooldown by 10% (0.07 seconds).
+- **Vitality:** +10 maximum health and heal 10 health.
+- **Fast Hands:** reduce the base reload duration by 10% (0.18 seconds).
+
+You can own at most three different cards, each capped at level five. Once all
+three slots are occupied, only upgrades to those cards are offered. Maxed cards
+are excluded, so fewer than three choices appear when fewer upgrades remain.
+Once all three cards are maxed, XP and levels continue without more offers.
+Death, respawning, and reconnecting reset cards along with XP and level.
+Reload upgrades affect reloads started after selection; an active reload finishes
+on its original timer and fills the current magazine capacity.
+
+Balance and selection rules live in `src/shared/UpgradeConfig.luau`.
+Offers, inventory, health, and weapon statistics are controlled by the server;
+the client submits only the offered card ID and its offer token. Old offers,
+invalid IDs, rapid requests, and selections after death cannot grant upgrades.
+
+Restart `rojo serve` to sync the remote and card asset mapping, then restart Play.
+Kill four dummies for the first offer, select a card, and check its actual effect
+and HUD. Continue until three cards are owned, then verify only those cards
+appear and stop at level five. Check a level-up on the last magazine round,
+a health pick while injured, and death while an offer is open. Use Start Server
+with two players to confirm choices, health, ammo, and resets stay independent.
+Check selection in desktop, portrait mobile, and landscape mobile emulation.
+Keep firing, aiming, and moving while the cards appear and animate away. Test
+1/2/3, chat typing, quick repeated keys, several queued offers, and dying during
+selection. Verify card meshes and the image load in the published experience.
+
+The upgrade regression checks use the official Luau CLI with small Roblox service
+fakes and load the project modules unchanged. If Python and Luau are available,
+run `python tests/run_upgrades.py --luau path/to/luau`. These check all 1,526 valid
+inventory states, selection validation, queued offers, life resets, per-player
+isolation, and health/damage effects. Studio is still required to verify engine
+behavior, rendering, input, and multiplayer replication.
+Run `luau tests/UpgradeOffer.spec.luau` for the presentation state checks,
+including acknowledgement, retries, late replies, and death during an animation.
+
 ## Consecutive-hit damage popup
 
 Revolver hits display that enemy's cumulative damage as a white number with
