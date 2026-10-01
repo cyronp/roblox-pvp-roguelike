@@ -10,8 +10,8 @@ The title has a dark outline linked to the ink color. The larger description is
 centered inside its panel, and the buff value and label share a font size and
 baseline, with the combined phrase centered in its box. Content edits preserve
 this alignment; the title outline follows title changes automatically.
-The original starter file is preserved as `assets/cards-original.blend`.
-The previous detailed design is saved as `assets/cards-before-simplification.blend`.
+Earlier Blender versions and the original detailed illustration are retained in
+Git history rather than the working tree.
 
 ## Edit in Blender
 
@@ -47,10 +47,14 @@ does not require the Windows font files to remain installed.
 - `card-shell.fbx`: mesh geometry and colorable sections, without baked text/art.
 - `card-complete.glb`: the complete sample, including text geometry and artwork.
 - `card-config.json`: source content and palette for rebuilding the sample.
-- `heavy-hitter-cartoon.png`: current cartoon illustration texture.
-- `heavy-hitter-art.png`: the original detailed illustration, kept for reuse.
+- `heavy-hitter-cartoon.png`: revised Heavy Hitter illustration with its orange card-color background.
+- `extra-round-cartoon.png`: extra ammo illustration with a cylinder and one additional cartridge.
+- `quick-trigger-cartoon.png`: faster firing illustration with a revolver and lightning bolt.
+- `vitality-cartoon.png`: healing illustration with a heart and protective shield.
+- `fast-hands-cartoon.png`: faster reloading illustration with a gloved hand and speedloader.
 - `artwork-cartoon-prompt.md`: current image-generation provenance and prompt.
 - `artwork-prompt.md`: original image-generation provenance and prompt.
+- `artwork-upgrades-prompts.md`: generation prompts and upload notes for the four remaining upgrades.
 
 In Roblox, import through Studio's 3D Importer. The shell is intended for reusable
 cards with runtime text/image UI; its separately named MeshParts can be recolored.
@@ -61,12 +65,17 @@ The complete GLB is a static sample with its current lettering converted to mesh
 during export. Blender drivers and its sidebar do not transfer into Roblox.
 `UpgradeCard.rbxm` is the Studio-imported shell (model ID `83993627838046`).
 Rojo maps it to `ReplicatedStorage.Assets.UpgradeCard`. The game clones this
-model into ViewportFrames and overlays runtime text and the uploaded illustration
-`123780956272251`. Each upgrade recolors the named parts, keeping its border
+model into ViewportFrames and overlays runtime text and each card's uploaded
+illustration. Each upgrade recolors the named parts, keeping its border
 darker than its center. The front-facing HUD camera keeps the overlay aligned;
 the whole card slides, scales, tilts, and fades during entrance and selection.
-The image is shared by all five upgrades. Change visuals in
+Each upgrade's style includes its own uploaded image ID; `UpgradeCardFace.luau`
+uses that image in both the choice row and owned inventory. Heavy Hitter uses
+`103713376246452`, Extra Round `108344419348133`, Quick Trigger `104341592990847`,
+Vitality `79870903578934`, and Fast Hands `110052819157016`. Change visuals in
 `src/client/UpgradeCardModel.luau`; no separate colored uploads are required.
+
+Heavy Hitter's uploaded illustration uses its orange card color as the background.
 
 Exports represent the default sample at build time. After manual edits, export
 again with the studio collection excluded. For the reusable shell, select only

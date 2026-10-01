@@ -29,7 +29,12 @@ return function(props: Props)
 			Active = false,
 			ZIndex = if rotation == 0 then 3 else 2,
 		}, {
-			Card = e(CardFace, { id = card.id, title = card.name, compact = true }),
+			Card = e(CardFace, {
+				id = card.id,
+				title = card.name,
+				compact = true,
+				buff = Config.getCardBuff(card.id, props.levels[card.id]),
+			}),
 			Level = e("TextLabel", {
 				AnchorPoint = Vector2.new(0.5, 1),
 				Position = UDim2.new(0.5, 0, 0, -5),

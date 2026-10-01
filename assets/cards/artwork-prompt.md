@@ -1,8 +1,8 @@
 # Artwork generation
 
-Generated with the built-in imagegen tool on 2026-09-29. Saved in this project as
-`heavy-hitter-art.png`; the Blender model, typography, layout, and materials are
-created separately with Blender Python.
+Generated with the built-in imagegen tool on 2026-09-29 as
+`heavy-hitter-art.png`, now retained in Git history. The Blender model,
+typography, layout, and materials are created separately with Blender Python.
 
 ## Complete prompt
 

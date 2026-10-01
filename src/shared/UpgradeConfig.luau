@@ -40,6 +40,21 @@ function Config.getCard(id: string): Card?
 	return nil
 end
 
+function Config.getCardBuff(id: string, level: number): string?
+	if id == "Damage" then
+		return `+{level * Config.DAMAGE_PER_LEVEL} DAMAGE`
+	elseif id == "Ammo" then
+		return `+{level} {if level == 1 then "BULLET" else "BULLETS"}`
+	elseif id == "Health" then
+		return `+{level * Config.HEALTH_PER_LEVEL} HEALTH`
+	elseif id == "FireRate" or id == "Reload" then
+		local reduction = math.round(level * Config.SPEED_REDUCTION_PER_LEVEL * 100)
+		local stat = if id == "FireRate" then "SHOT DELAY" else "RELOAD TIME"
+		return `-{reduction}% {stat}`
+	end
+	return nil
+end
+
 function Config.getOwnedCount(levels: Levels): number
 	local count = 0
 	for _, card in Config.CARDS do

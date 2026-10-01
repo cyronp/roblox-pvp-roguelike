@@ -5,15 +5,39 @@ local Projection = require(script.Parent.UpgradeCardProjection)
 local CardModel = {
 	-- The local model preserves the uploaded mesh IDs without a runtime InsertService call.
 	AssetId = 83993627838046,
-	Image = "rbxassetid://123780956272251",
 	Width = Projection.Width,
 	Height = Projection.Height,
 	Styles = {
-		Damage = { color = Color3.fromRGB(247, 123, 57), description = "Every shot deals\n5 extra damage.", buff = "+5 DAMAGE" },
-		Ammo = { color = Color3.fromRGB(242, 185, 45), description = "Carry 1 more bullet\nin each magazine.", buff = "+1 BULLET" },
-		FireRate = { color = Color3.fromRGB(56, 159, 236), description = "Cut base shot delay\nby another 10%.", buff = "-10% SHOT DELAY" },
-		Health = { color = Color3.fromRGB(66, 199, 141), description = "Gain 10 max health\nand heal 10 health.", buff = "+10 HEALTH" },
-		Reload = { color = Color3.fromRGB(168, 121, 232), description = "Cut base reload time\nby another 10%.", buff = "-10% RELOAD TIME" },
+		Damage = {
+			color = Color3.fromRGB(247, 123, 57),
+			image = "rbxassetid://103713376246452",
+			description = "Every shot deals\n5 extra damage.",
+			buff = "+5 DAMAGE",
+		},
+		Ammo = {
+			color = Color3.fromRGB(242, 185, 45),
+			image = "rbxassetid://108344419348133",
+			description = "Carry 1 more bullet\nin each magazine.",
+			buff = "+1 BULLET",
+		},
+		FireRate = {
+			color = Color3.fromRGB(56, 159, 236),
+			image = "rbxassetid://104341592990847",
+			description = "Cut base shot delay\nby another 10%.",
+			buff = "-10% SHOT DELAY",
+		},
+		Health = {
+			color = Color3.fromRGB(66, 199, 141),
+			image = "rbxassetid://79870903578934",
+			description = "Gain 10 max health\nand heal 10 health.",
+			buff = "+10 HEALTH",
+		},
+		Reload = {
+			color = Color3.fromRGB(168, 121, 232),
+			image = "rbxassetid://110052819157016",
+			description = "Cut base reload time\nby another 10%.",
+			buff = "-10% RELOAD TIME",
+		},
 	},
 }
 

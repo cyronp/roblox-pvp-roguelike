@@ -101,7 +101,7 @@ return function(props)
 			BackgroundColor3 = style.color,
 			BackgroundTransparency = fade,
 			BorderSizePixel = 0,
-			Image = CardModel.Image,
+			Image = style.image,
 			ImageTransparency = fade,
 			ScaleType = if props.spinning then Enum.ScaleType.Stretch else Enum.ScaleType.Crop,
 			Active = false,
@@ -110,6 +110,6 @@ return function(props)
 			Corner = e("UICorner", { CornerRadius = UDim.new(0.055, 0) }),
 		}),
 		Description = label(style.description, project(angle, 0.5, 0.703, 0.81, 0.154), 19, INK, fade),
-		Buff = label(style.buff, project(angle, 0.5, 0.881, 0.81, 0.095), 21, Color3.new(1, 1, 1), fade),
+		Buff = label(props.buff or style.buff, project(angle, 0.5, 0.881, 0.81, 0.095), 21, Color3.new(1, 1, 1), fade),
 	})
 end

@@ -134,8 +134,8 @@ overlap. Both displays leave aiming and shooting active.
 
 The 3D shell is `assets/cards/UpgradeCard.rbxm` (uploaded model **83993627838046**),
 mapped to `ReplicatedStorage.Assets.UpgradeCard`. Each card has its own color,
-a darker border, an outlined title, description, and buff. All five currently
-use the supplied illustration **123780956272251**. Visuals are configured in
+a darker border, an outlined title, description, and buff. Each upgrade uses
+its own uploaded illustration. Visuals and image IDs are configured in
 `src/client/UpgradeCardModel.luau`; card rendering, animation, and selection
 state are separate client modules. The saved model supplies its mesh IDs,
 so the game does not need to insert a cloud model at runtime.
