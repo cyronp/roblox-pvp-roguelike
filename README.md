@@ -34,13 +34,26 @@ files; scripts added only in Studio under that service are removed on sync.
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).
 
-## HUD typography
+## Cartoon HUD style
 
-The HUD uses Roblox's built-in Nunito family, defined in
-`src/shared/UIFonts.luau`: Bold for ammo and XP, ExtraBold for levels, damage and
-hit streaks, and Regular for the ammo separator and capacity. Future UI can reuse
-these fonts through the `FontFace` property. Restart Play after syncing changes;
-check text spacing in desktop and mobile emulation.
+`src/shared/UITheme.luau` defines the shared cream surfaces, navy outlines,
+rounded corners, bright accents, and bottom spacing. The HUD uses Nunito Bold
+and ExtraBold from `src/shared/UIFonts.luau`. Upgrade shells, level badges,
+input hints, progress meters, damage numbers, and streak colors use this palette.
+
+Ammo and dash charges share one compact cream panel at the upper right, away
+from the character. Three cyan bars show charges: filled bars dim during the
+one-second dash lockout, and the next empty bar fills over 3.5 seconds. The UI
+does not show dash countdown numbers. The gold shooting cooldown stays at the
+crosshair; temporary hit streak feedback appears below the combined panel. Mobile has a matching gold
+DASH button and upgrade selection buttons at least 44 pixels tall and wide.
+
+The bottom dock combines a gold level badge and rounded blue XP meter, with
+space reserved above it for owned upgrade cards. Owned cards have colored level
+badges and a clear TOTAL BONUS caption. Offers use a cream heading with separate
+selection instructions. Sync and restart Play to see the changes; check desktop,
+portrait, and landscape mobile layouts in Studio, including an active offer,
+three owned cards, an empty magazine, and depleted dash charges.
 
 ## Permanent cartoon lighting
 
@@ -96,9 +109,9 @@ confirmation. The same confirmation applies to player kills.
 
 ## XP and levels
 
-A blue gradient XP bar spans the bottom of the screen, with the XP count (such as
-`0/100`) centered inside it. A larger blue gradient LVL label sits at the bottom
-right above the bar, inside device safe bounds. Players start at LVL 1 with 0 XP. Every server-confirmed kill
+A rounded blue XP meter and a gold LVL badge share a dock along the bottom,
+inside device safe bounds. The XP count (such as `0 / 100 XP`) is centered inside
+the meter. Players start at LVL 1 with 0 XP. Every server-confirmed kill
 (including training dummies) grants 25 XP to the player landing the final shot.
 The first level needs 100 XP; each subsequent level needs 50 more (150, 200,
 250, and so on). Extra XP carries into the next level. Death immediately resets
@@ -128,13 +141,13 @@ Typing in chat or opening the Roblox menu does not select an upgrade.
 Your owned upgrades remain visible as miniature cards at the bottom center,
 above the XP bar. A single card sits straight; two tilt outward; three keep
 the middle card straight and tilt the outer pair. Each card has a matching
-colored `N LVL` label above it. The fan updates from the server's inventory
+colored `LVL N` badge above it. The fan updates from the server's inventory
 and clears on death. On smaller screens, choices move above the fan to avoid
 overlap. Both displays leave aiming and shooting active.
 
 The 3D shell is `assets/cards/UpgradeCard.rbxm` (uploaded model **83993627838046**),
 mapped to `ReplicatedStorage.Assets.UpgradeCard`. Each card has its own color,
-a darker border, an outlined title, description, and buff. Each upgrade uses
+a navy border, an outlined title, description, and buff. Each upgrade uses
 its own uploaded illustration. Visuals and image IDs are configured in
 `src/client/UpgradeCardModel.luau`; card rendering, animation, and selection
 state are separate client modules. The saved model supplies its mesh IDs,
@@ -190,8 +203,8 @@ missing charges recharge one at a time every 3.5 seconds. Spending another charg
 does not restart the recharge already in progress. Three spent charges therefore
 return at 3.5, 7, and 10.5 seconds after the first dash.
 
-Three aqua bars beneath the crosshair show available charges, recharge progress,
-and the cooldown. The default burst lasts 0.25 seconds at 72 studs per second;
+Three cyan bars beside ammo at the upper right show available charges and
+recharge progress; filled bars dim during the one-second cooldown. The default burst lasts 0.25 seconds at 72 studs per second;
 speed and timing are configured in `src/shared/DashConfig.luau`. Horizontal
 movement uses Roblox's [LinearVelocity constraint](https://create.roblox.com/docs/reference/engine/classes/LinearVelocity),
 preserving vertical motion and normal collisions. The server validates direction,
@@ -212,9 +225,9 @@ fakes; movement feel, collisions, and rendering need verification in Studio.
 
 ## Consecutive-hit damage popup
 
-Revolver hits display that enemy's cumulative damage as a white number with
-a black outline at its upper right. A `1x`, `2x`, `3x` hit streak appears below
-and to the right of the final capacity number in the ammo HUD: 1–3x is white, 4–6x blue, 7–8x
+Revolver hits display that enemy's cumulative damage as a cream number with
+a navy outline at its upper right. A `1x`, `2x`, `3x` hit streak appears directly below
+the combined combat panel: 1–3x is cream, 4–6x blue, 7–8x
 orange, and 9x or higher uses a fire gradient with animated embers. Its
 countdown bar sits tightly underneath and uses the same color tier. On each
 hit, the damage number snaps from a slight shrink to roughly 1.6–1.7 times
@@ -245,7 +258,7 @@ streak, and expiration calculations run on the server. Tuning values are in
 Restart Rojo to sync the HUD modules, then restart Play. Hit the training
 dummy three times: the feedback should show
 `35 / 1x`, `70 / 2x`, then `100 / 3x` with one kill confirmation. The damage
-appears at the dummy's upper right and the count at the ammo capacity's lower right. Shoot another
+appears at the dummy's upper right and the count beneath the combat panel. Shoot another
 dummy before the deadline to see `35` above that dummy and `4x` under the ammo.
 In a separate run, shoot the same dummy promptly after it respawns to continue
 at `135 / 4x`; verify that each

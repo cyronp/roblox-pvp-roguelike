@@ -2,11 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local CardModel = require(script.Parent.UpgradeCardModel)
 local CardFace = require(script.Parent.UpgradeCardFace)
 local Offer = require(script.Parent.UpgradeOfferState)
 local e = React.createElement
-local INK = Color3.fromRGB(36, 51, 73)
+local INK = Theme.Ink
 
 type Props = {
 	id: string,
@@ -94,7 +95,7 @@ return function(props: Props)
 
 	return e("Frame", {
 		LayoutOrder = props.index,
-		Size = UDim2.fromOffset(props.width, height + 38),
+		Size = UDim2.fromOffset(props.width, height + 50),
 		BackgroundTransparency = 1,
 		Active = false,
 	}, {
@@ -115,16 +116,16 @@ return function(props: Props)
 			Key = e(if props.touch then "TextButton" else "TextLabel", {
 				AnchorPoint = Vector2.new(0.5, 1),
 				Position = UDim2.fromScale(0.5, 1),
-				Size = UDim2.fromOffset(if props.touch then 64 else 38, 32),
-				BackgroundColor3 = if props.mode == "chosen" then style.color else INK,
+				Size = UDim2.fromOffset(if props.touch then math.clamp(props.width, 44, 64) else 40, 44),
+				BackgroundColor3 = if props.mode == "chosen" then style.color else Theme.Paper,
 				BackgroundTransparency = fade,
 				BorderSizePixel = 0,
 				Active = props.touch,
 				Selectable = false,
 				FontFace = UIFonts.ExtraBold,
 				Text = if props.mode == "chosen" then "✓" else tostring(props.index),
-				TextSize = 21,
-				TextColor3 = Color3.new(1, 1, 1),
+				TextSize = 23,
+				TextColor3 = INK,
 				TextTransparency = fade,
 				[React.Event.Activated] = if props.touch then function(_, input: InputObject)
 					if input.UserInputType == Enum.UserInputType.Touch then
@@ -132,7 +133,11 @@ return function(props: Props)
 					end
 				end else nil,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 9) }),
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+				Outline = e("UIStroke", {
+					Color = INK, Thickness = Theme.Border, Transparency = fade,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				}),
 			}),
 		}),
 	})

@@ -2,11 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local CardModel = require(script.Parent.UpgradeCardModel)
 local Projection = require(script.Parent.UpgradeCardProjection)
 local Offer = require(script.Parent.UpgradeOfferState)
 local e = React.createElement
-local INK = Color3.fromRGB(36, 51, 73)
+local INK = Theme.Ink
 
 local function project(angle, x: number, y: number, width: number, height: number)
 	local bounds = angle:map(function(value: number)
@@ -109,7 +110,8 @@ return function(props)
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0.055, 0) }),
 		}),
-		Description = label(style.description, project(angle, 0.5, 0.703, 0.81, 0.154), 19, INK, fade),
+		Description = label(if props.compact then "TOTAL BONUS" else style.description,
+			project(angle, 0.5, 0.703, 0.81, 0.154), if props.compact then 13 else 19, INK, fade),
 		Buff = label(props.buff or style.buff, project(angle, 0.5, 0.881, 0.81, 0.095), 21, Color3.new(1, 1, 1), fade),
 	})
 end

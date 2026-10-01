@@ -7,10 +7,12 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("Dash") :: RemoteEvent
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DashConfig"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
-local DashHud = require(script.Parent.DashHud)
+local CombatHud = require(script.Parent.CombatHud)
 local ACTION = "Dash"
 local lastRequestAt = -math.huge
 
@@ -43,14 +45,48 @@ end, true, Enum.ContextActionPriority.High.Value, Enum.KeyCode.LeftShift, Enum.K
 ContextActionService:SetTitle(ACTION, "DASH")
 ContextActionService:SetPosition(ACTION, UDim2.new(1, -160, 1, -160))
 
+local function styleTouchButton()
+	local button = ContextActionService:GetButton(ACTION)
+	if not button or button:FindFirstChild("CartoonCorner") then return end
+	button.Image = ""
+	button.BackgroundColor3 = Theme.White
+	button.BackgroundTransparency = 0
+	button.BorderSizePixel = 0
+	button.Size = UDim2.fromOffset(64, 64)
+	local corner = Instance.new("UICorner")
+	corner.Name = "CartoonCorner"
+	corner.CornerRadius = UDim.new(0, 18)
+	corner.Parent = button
+	local outline = Instance.new("UIStroke")
+	outline.Color = Theme.Ink
+	outline.Thickness = 3
+	outline.Parent = button
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = Theme.GoldGradient
+	gradient.Rotation = 90
+	gradient.Parent = button
+	for _, child in button:GetDescendants() do
+		if child:IsA("TextLabel") then
+			child.FontFace = UIFonts.ExtraBold
+			child.TextColor3 = Theme.Ink
+			child.TextStrokeTransparency = 1
+			child.TextSize = 16
+		end
+	end
+end
+
+styleTouchButton()
+local touchConnection = UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(styleTouchButton)
+
 local hudContainer = Instance.new("Folder")
-hudContainer.Name = "DashHudRoot"
+hudContainer.Name = "CombatHudRoot"
 local hudRoot = ReactRoblox.createRoot(hudContainer)
 hudRoot:render(ReactRoblox.createPortal(
-	React.createElement(DashHud, { player = player }), player:WaitForChild("PlayerGui")
+	React.createElement(CombatHud, { player = player }), player:WaitForChild("PlayerGui")
 ))
 
 script.Destroying:Connect(function()
+	touchConnection:Disconnect()
 	ContextActionService:UnbindAction(ACTION)
 	hudRoot:unmount()
 	hudContainer:Destroy()

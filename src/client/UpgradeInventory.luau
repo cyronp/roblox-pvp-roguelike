@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local CardModel = require(script.Parent.UpgradeCardModel)
 local CardFace = require(script.Parent.UpgradeCardFace)
 local e = React.createElement
@@ -38,23 +39,25 @@ return function(props: Props)
 			Level = e("TextLabel", {
 				AnchorPoint = Vector2.new(0.5, 1),
 				Position = UDim2.new(0.5, 0, 0, -5),
-				Size = UDim2.new(1, 0, 0, 22),
-				BackgroundTransparency = 1,
+				Size = UDim2.new(0.82, 0, 0, 22),
+				BackgroundColor3 = CardModel.Styles[card.id].color,
+				BorderSizePixel = 0,
 				Active = false,
 				FontFace = UIFonts.ExtraBold,
-				Text = `{props.levels[card.id]} LVL`,
-				TextSize = 17,
-				TextColor3 = CardModel.Styles[card.id].color,
+				Text = `LVL {props.levels[card.id]}`,
+				TextSize = 12,
+				TextColor3 = Theme.Ink,
 				ZIndex = 4,
 			}, {
-				Stroke = e("UIStroke", { Color = Color3.fromRGB(20, 28, 43), Thickness = 1.5 }),
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.SmallRadius) }),
+				Stroke = e("UIStroke", { Color = Theme.Ink, Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
 			}),
 		})
 	end
 	return e("Frame", {
 		Name = "OwnedUpgradeCards",
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -42),
+		Position = UDim2.new(0.5, 0, 1, -Theme.InventoryBottom),
 		Size = UDim2.fromOffset(props.width * 3.2, height + 40),
 		BackgroundTransparency = 1,
 		Active = false,

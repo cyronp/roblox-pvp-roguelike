@@ -11,6 +11,7 @@ local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local CardView = require(script.Parent.UpgradeCardView)
 local UpgradeInventory = require(script.Parent.UpgradeInventory)
 local useUpgradeOffer = require(script.Parent.useUpgradeOffer)
@@ -32,16 +33,16 @@ local function UpgradeHud()
 	local cardHeight = cardWidth * 3.54 / 2.54
 	local inventoryWidth = math.clamp(viewportSize.X * 0.075, 56, 88)
 	local inventoryHeight = inventoryWidth * 3.54 / 2.54 + 40
-	local choiceBottom = if touch then 160 else 36
+	local choiceBottom = if touch then 160 else Theme.InventoryBottom
 	-- Stack the choice row above the fan only when they share horizontal space.
 	if (hasOffer or Config.getOwnedCount(state.latest.levels) > 0)
 		and 16 + cardWidth * 3 + 20 > viewportSize.X / 2 - inventoryWidth * 1.6 then
-		choiceBottom = math.max(choiceBottom, inventoryHeight + 52)
+		choiceBottom = math.max(choiceBottom, inventoryHeight + Theme.InventoryBottom + 10)
 	end
-	cardWidth = math.min(cardWidth, math.max(80, viewportSize.Y - choiceBottom - 84) * 2.54 / 3.54)
+	cardWidth = math.min(cardWidth, math.max(60, viewportSize.Y - choiceBottom - 116) * 2.54 / 3.54)
 	cardHeight = cardWidth * 3.54 / 2.54
-	local hint = if touch then "TAP A NUMBER" else `PRESS {KEY_HINTS[#snapshot.choices] or ""}`
-	local queueHint = if snapshot.pending > 1 then `  (+{snapshot.pending - 1} waiting)` else ""
+	local hint = if touch then "TAP TO PICK" else `PICK {KEY_HINTS[#snapshot.choices] or ""}`
+	local queueHint = if snapshot.pending > 1 then `  +{snapshot.pending - 1} QUEUED` else ""
 
 	React.useEffect(function()
 		local connection = UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(function()
@@ -116,27 +117,41 @@ local function UpgradeHud()
 			Choices = e("Frame", {
 				AnchorPoint = Vector2.new(0, 1),
 				Position = UDim2.new(0, 16, 1, -choiceBottom),
-				Size = UDim2.fromOffset(cardWidth * 3 + 20, cardHeight + 68),
+				Size = UDim2.fromOffset(cardWidth * 3 + 20, cardHeight + 100),
 				BackgroundTransparency = 1,
 				Active = false,
 				Visible = hasOffer,
 			}, {
-				Hint = e("TextLabel", {
-					Size = UDim2.new(1, 0, 0, 24),
-					BackgroundTransparency = 1,
-					Active = false,
-					FontFace = UIFonts.ExtraBold,
-					Text = if state.selected then "UPGRADE ADDED!" elseif state.requested then "CHOOSING..." else `LEVEL UP!  {hint}{queueHint}`,
-					TextColor3 = Color3.new(1, 1, 1),
-					TextXAlignment = Enum.TextXAlignment.Left,
-					TextScaled = true,
-					TextStrokeTransparency = 0.15,
+				Banner = e("Frame", {
+					Size = UDim2.new(1, 0, 0, 42),
+					BackgroundColor3 = Theme.Paper,
+					BorderSizePixel = 0,
 				}, {
-					Bounds = e("UITextSizeConstraint", { MinTextSize = 9, MaxTextSize = 17 }),
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+					Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border }),
+					Title = e("TextLabel", {
+						Position = UDim2.fromOffset(10, 2), Size = UDim2.new(1, -20, 0, 21),
+						BackgroundTransparency = 1, FontFace = UIFonts.ExtraBold,
+						Text = if state.selected then "UPGRADE ADDED!" elseif state.requested then "CHOOSING..." else "LEVEL UP!",
+						TextColor3 = Theme.Ink, TextXAlignment = Enum.TextXAlignment.Left,
+						TextScaled = true,
+					}, { Bounds = e("UITextSizeConstraint", { MinTextSize = 11, MaxTextSize = 18 }) }),
+					Hint = e("TextLabel", {
+						Position = UDim2.fromOffset(10, 24), Size = UDim2.new(1, -20, 0, 14),
+						BackgroundTransparency = 1,
+						Active = false,
+						FontFace = UIFonts.Bold,
+						Text = `{hint}{queueHint}`,
+						TextColor3 = Theme.Muted,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						TextScaled = true,
+					}, {
+						Bounds = e("UITextSizeConstraint", { MinTextSize = 9, MaxTextSize = 11 }),
+					}),
 				}),
 				Cards = e("Frame", {
-					Position = UDim2.fromOffset(0, 30),
-					Size = UDim2.new(1, 0, 1, -30),
+					Position = UDim2.fromOffset(0, 50),
+					Size = UDim2.new(1, 0, 1, -50),
 					BackgroundTransparency = 1,
 					Active = false,
 				}, cards),

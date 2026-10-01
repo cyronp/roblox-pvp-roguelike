@@ -1,12 +1,14 @@
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local player = Players.LocalPlayer
-local CROSSHAIR_COLOR = Color3.fromRGB(255, 255, 255)
-local COOLDOWN_COLOR = Color3.fromRGB(180, 184, 190)
+local CROSSHAIR_COLOR = Theme.Paper
+local COOLDOWN_COLOR = Theme.Gold
 local COOLDOWN_DIAMETER = 44
 local COOLDOWN_RADIUS = COOLDOWN_DIAMETER / 2
 local COOLDOWN_SEGMENT_COUNT = 48
@@ -59,15 +61,15 @@ local function addMark(name: string, x: number, y: number, width: number, height
 	mark.Parent = crosshair
 
 	local outline = Instance.new("UIStroke")
-	outline.Color = Color3.fromRGB(25, 25, 25)
-	outline.Thickness = 0.5
+	outline.Color = Theme.Ink
+	outline.Thickness = 1.25
 	outline.Parent = mark
 end
 
-addMark("Top", 8, 4, 1, 5)
-addMark("Bottom", 8, 12, 1, 5)
-addMark("Left", 4, 8, 5, 1)
-addMark("Right", 12, 8, 5, 1)
+addMark("Top", 8, 4, 2, 5)
+addMark("Bottom", 8, 12, 2, 5)
+addMark("Left", 4, 8, 5, 2)
+addMark("Right", 12, 8, 5, 2)
 
 local cooldownRing = Instance.new("Frame")
 cooldownRing.Name = "ShotCooldown"

@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local getGradient = require(script.Parent:WaitForChild("StreakColors"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local e = React.createElement
 
 type Props = {
@@ -38,13 +39,12 @@ local function StreakTimer(props: Props)
 		Name = "StreakCountdown",
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 34),
-		Size = UDim2.fromOffset(52, 4),
+		Size = UDim2.fromOffset(52, 6),
 		BackgroundTransparency = 1,
 	}, {
 		Track = e("Frame", {
 			Size = UDim2.fromScale(1, 1),
-			BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-			BackgroundTransparency = 0.3,
+			BackgroundColor3 = Theme.Ink,
 			BorderSizePixel = 0,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(1, 0) }),

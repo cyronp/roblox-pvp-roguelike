@@ -9,9 +9,9 @@ local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("U
 local hitConfirmedRemote = ReplicatedStorage:WaitForChild("HitConfirmed") :: RemoteEvent
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local e = React.createElement
 
-local BLACK = Color3.fromRGB(0, 0, 0)
 local FADE_TIME = 0.25
 local START_OFFSET = Vector3.new(0, 1.8, 0)
 local KICK_OFFSET = Vector3.new(0, 2.35, 0)
@@ -86,14 +86,14 @@ local function DamageHud(props: Props)
 		panel.GroupTransparency = 0
 		scale.Scale = 0.82
 		row.Rotation = if feedback.hitCount % 2 == 0 then 8 else -8
-		label.TextColor3 = Color3.fromRGB(255, 225, 135)
+		label.TextColor3 = Theme.GoldLight
 		stroke.Thickness = 5
 		billboard.StudsOffsetWorldSpace = START_OFFSET
 		local peakScale = 1.6 + math.min(feedback.hitCount, 12) * 0.01
 		local pop = TweenService:Create(scale, TweenInfo.new(0.065, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Scale = peakScale })
 		local settle = TweenService:Create(scale, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
 		local tilt = TweenService:Create(row, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Rotation = 0 })
-		local flash = TweenService:Create(label, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextColor3 = Color3.fromRGB(255, 255, 255) })
+		local flash = TweenService:Create(label, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextColor3 = Theme.Paper })
 		local outline = TweenService:Create(stroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Thickness = 3 })
 		local kickDuration = math.min(0.12, remaining)
 		local kick = TweenService:Create(billboard, TweenInfo.new(kickDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { StudsOffsetWorldSpace = KICK_OFFSET })
@@ -192,10 +192,10 @@ local function DamageHud(props: Props)
 					FontFace = UIFonts.ExtraBold,
 					Text = string.format("%.0f", feedback.totalDamage),
 					TextSize = math.min(48 + (feedback.hitCount - 1), 56),
-					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextColor3 = Theme.Paper,
 					LayoutOrder = 1,
 				}, {
-					Stroke = e("UIStroke", { ref = strokeRef, Color = BLACK, Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
+					Stroke = e("UIStroke", { ref = strokeRef, Color = Theme.Ink, Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
 				}),
 			}),
 		}),

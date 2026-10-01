@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local template = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("UpgradeCard") :: Model
 local Projection = require(script.Parent.UpgradeCardProjection)
 
@@ -9,31 +10,31 @@ local CardModel = {
 	Height = Projection.Height,
 	Styles = {
 		Damage = {
-			color = Color3.fromRGB(247, 123, 57),
+			color = Theme.Orange,
 			image = "rbxassetid://103713376246452",
 			description = "Every shot deals\n5 extra damage.",
 			buff = "+5 DAMAGE",
 		},
 		Ammo = {
-			color = Color3.fromRGB(242, 185, 45),
+			color = Theme.Gold,
 			image = "rbxassetid://108344419348133",
 			description = "Carry 1 more bullet\nin each magazine.",
 			buff = "+1 BULLET",
 		},
 		FireRate = {
-			color = Color3.fromRGB(56, 159, 236),
+			color = Theme.Blue,
 			image = "rbxassetid://104341592990847",
 			description = "Cut base shot delay\nby another 10%.",
 			buff = "-10% SHOT DELAY",
 		},
 		Health = {
-			color = Color3.fromRGB(66, 199, 141),
+			color = Theme.Green,
 			image = "rbxassetid://79870903578934",
 			description = "Gain 10 max health\nand heal 10 health.",
 			buff = "+10 HEALTH",
 		},
 		Reload = {
-			color = Color3.fromRGB(168, 121, 232),
+			color = Theme.Purple,
 			image = "rbxassetid://110052819157016",
 			description = "Cut base reload time\nby another 10%.",
 			buff = "-10% RELOAD TIME",
@@ -52,7 +53,7 @@ function CardModel.mount(viewport: ViewportFrame, color: Color3): (() -> (), (nu
 	local toArtwork = artwork.Position - body.Position
 	local up = (toArtwork - normal * toArtwork:Dot(normal)).Unit
 	local front = CFrame.fromMatrix(body.Position, up:Cross(normal), up, normal)
-	local dark = color:Lerp(Color3.new(0, 0, 0), 0.38)
+	local dark = Theme.Ink
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
 			part.CFrame = front:ToObjectSpace(part.CFrame)
@@ -65,7 +66,7 @@ function CardModel.mount(viewport: ViewportFrame, color: Color3): (() -> (), (nu
 			if part.Name == "Card_Colored_Face" or part.Name == "Card_Back_Face" then
 				part.Color = color
 			elseif part.Name == "Card_Description_Panel" then
-				part.Color = Color3.fromRGB(255, 248, 236)
+				part.Color = Theme.Paper
 			elseif part.Name == "Card_Back_Sigil" then
 				part.Color = Color3.new(1, 1, 1)
 			else

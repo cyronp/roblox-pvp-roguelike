@@ -4,6 +4,7 @@ local TweenService = game:GetService("TweenService")
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local getGradient = require(script.Parent:WaitForChild("StreakColors"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local e = React.createElement
 
 type Props = { count: number }
@@ -60,7 +61,7 @@ local function HitCount(props: Props)
 		for index = 1, 5 do
 			embers[`Ember{index}`] = e("Frame", {
 				Size = UDim2.fromOffset(3, 7),
-				BackgroundColor3 = if index % 2 == 0 then Color3.fromRGB(255, 219, 91) else Color3.fromRGB(255, 115, 28),
+				BackgroundColor3 = if index % 2 == 0 then Theme.GoldLight else Theme.Orange,
 				BorderSizePixel = 0,
 				Rotation = 45,
 				ZIndex = 1,
@@ -82,7 +83,7 @@ local function HitCount(props: Props)
 		ZIndex = 2,
 	}, {
 		Gradient = e("UIGradient", { ref = gradientRef, Color = getGradient(props.count), Rotation = 90 }),
-		Stroke = e("UIStroke", { Color = Color3.fromRGB(0, 0, 0), Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
+		Stroke = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
 		Fire = if onFire then e("Frame", {
 			ref = fireRef,
 			AnchorPoint = Vector2.new(0.5, 0.5),

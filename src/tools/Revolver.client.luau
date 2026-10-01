@@ -7,37 +7,37 @@ local fireRemote = ReplicatedStorage:WaitForChild("RevolverFire") :: RemoteEvent
 local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
-local AmmoHud = require(tool:WaitForChild("AmmoHud"))
+local StreakHud = require(tool:WaitForChild("StreakHud"))
 local DamageHud = require(tool:WaitForChild("DamageHud"))
 local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 
 local RANGE = 300
 local lastShotAt = -math.huge
 
-local reticle = player:WaitForChild("PlayerGui"):WaitForChild("Crosshair"):WaitForChild("Reticle")
-local hudContainer = Instance.new("Frame")
+local hudContainer = Instance.new("ScreenGui")
 hudContainer.Name = "RevolverHud"
-hudContainer.Size = UDim2.fromScale(1, 1)
-hudContainer.BackgroundTransparency = 1
-hudContainer.Visible = false
-hudContainer.Parent = reticle
+hudContainer.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+hudContainer.ResetOnSpawn = false
+hudContainer.DisplayOrder = 10
+hudContainer.Enabled = false
+hudContainer.Parent = player:WaitForChild("PlayerGui")
 
 local hudRoot = ReactRoblox.createRoot(hudContainer)
 hudRoot:render(React.createElement(React.Fragment, nil, {
-	Ammo = React.createElement(AmmoHud, { tool = tool }),
+	Streak = React.createElement(StreakHud, { tool = tool }),
 	Damage = React.createElement(DamageHud, { tool = tool }),
 }))
 
 tool.Equipped:Connect(function()
-	hudContainer.Visible = true
+	hudContainer.Enabled = true
 end)
 
 tool.Unequipped:Connect(function()
-	hudContainer.Visible = false
+	hudContainer.Enabled = false
 end)
 
 if tool.Parent == player.Character then
-	hudContainer.Visible = true
+	hudContainer.Enabled = true
 end
 
 tool.Activated:Connect(function()

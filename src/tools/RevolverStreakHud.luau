@@ -89,9 +89,9 @@ local function StreakHud(props: Props)
 	return e("CanvasGroup", {
 		ref = panelRef,
 		Name = "HitStreak",
-		AnchorPoint = Vector2.new(0.5, 0),
-		-- Just below and to the right of the ammo HUD's final "06".
-		Position = UDim2.fromOffset(76, 20),
+		AnchorPoint = Vector2.new(1, 0),
+		-- Show temporary streak feedback beneath the combined combat HUD.
+		Position = UDim2.new(1, -20, 0, 72),
 		Size = UDim2.fromOffset(76, 60),
 		BackgroundTransparency = 1,
 	}, {

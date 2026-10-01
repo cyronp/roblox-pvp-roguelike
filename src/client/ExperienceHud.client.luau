@@ -9,14 +9,8 @@ local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ExperienceConfig"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
+local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local e = React.createElement
-
-local BAR_HEIGHT = 24
-local BLUE_GRADIENT = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 90, 225)),
-	ColorSequenceKeypoint.new(0.55, Color3.fromRGB(40, 155, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(95, 215, 255)),
-})
 
 type Progress = { level: number, xp: number }
 
@@ -82,68 +76,65 @@ local function ExperienceHud()
 		end
 	end, { fraction, progress.level })
 
-	return e(React.Fragment, nil, {
-		Bar = e("ScreenGui", {
-			Name = "ExperienceBar",
-			ResetOnSpawn = false,
-			DisplayOrder = 5,
-			ScreenInsets = Enum.ScreenInsets.None,
-			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	return e("ScreenGui", {
+		Name = "ExperienceHud",
+		ResetOnSpawn = false,
+		DisplayOrder = 5,
+		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	}, {
+		Dock = e("Frame", {
+			AnchorPoint = Vector2.new(0.5, 1),
+			Position = UDim2.new(0.5, 0, 1, -Theme.BottomInset),
+			Size = UDim2.new(1, -32, 0, Theme.ProgressHeight),
+			BackgroundTransparency = 1,
 		}, {
-			Track = e("Frame", {
-				AnchorPoint = Vector2.new(0, 1),
-				Position = UDim2.fromScale(0, 1),
-				Size = UDim2.new(1, 0, 0, BAR_HEIGHT),
-				BackgroundColor3 = Color3.fromRGB(12, 24, 45),
+			Level = e("TextLabel", {
+				Size = UDim2.fromOffset(78, Theme.ProgressHeight),
+				BackgroundColor3 = Theme.White,
 				BorderSizePixel = 0,
-				ClipsDescendants = true,
+				FontFace = UIFonts.ExtraBold,
+				Text = `LVL {progress.level}`,
+				TextColor3 = Theme.Ink,
+				TextScaled = true,
 			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+				Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+				Gradient = e("UIGradient", { Color = Theme.GoldGradient, Rotation = 90 }),
+				Padding = e("UIPadding", { PaddingLeft = UDim.new(0, 7), PaddingRight = UDim.new(0, 7) }),
+				Bounds = e("UITextSizeConstraint", { MinTextSize = 11, MaxTextSize = 18 }),
+			}),
+			Track = e("Frame", {
+				Position = UDim2.fromOffset(88, 3),
+				Size = UDim2.new(1, -88, 1, -6),
+				BackgroundColor3 = Theme.Ink,
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+				Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border }),
 				Fill = e("Frame", {
 					ref = fillRef,
 					Size = UDim2.fromScale(0, 1),
-					BackgroundColor3 = Color3.new(1, 1, 1),
+					BackgroundColor3 = Theme.White,
 					BorderSizePixel = 0,
 				}, {
-					Gradient = e("UIGradient", {
-						Color = BLUE_GRADIENT,
-					}),
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+					Gradient = e("UIGradient", { Color = Theme.BlueGradient, Rotation = 90 }),
+					Shine = e("Frame", {
+						Position = UDim2.fromScale(0.04, 0.12), Size = UDim2.fromScale(0.92, 0.14),
+						BackgroundColor3 = Theme.White, BackgroundTransparency = 0.65, BorderSizePixel = 0,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(1, 0) }) }),
 				}),
 				Progress = e("TextLabel", {
 					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,
-					FontFace = UIFonts.Bold,
-					Text = `{progress.xp}/{requiredXp}`,
-					TextColor3 = Color3.new(1, 1, 1),
-					TextSize = 14,
-					TextStrokeColor3 = Color3.fromRGB(8, 16, 30),
-					TextStrokeTransparency = 0.2,
+					FontFace = UIFonts.ExtraBold,
+					Text = `{progress.xp} / {requiredXp} XP`,
+					TextColor3 = Theme.Paper,
+					TextSize = 13,
 					ZIndex = 2,
-				}),
-			}),
-		}),
-		-- Keep text inside device safe bounds while the decorative bar spans the entire screen.
-		Labels = e("ScreenGui", {
-			Name = "ExperienceLabels",
-			ResetOnSpawn = false,
-			DisplayOrder = 5,
-			ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
-		}, {
-			Level = e("TextLabel", {
-				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.new(1, -18, 1, -(BAR_HEIGHT + 8)),
-				Size = UDim2.new(1, -36, 0, 42),
-				BackgroundTransparency = 1,
-				FontFace = UIFonts.ExtraBold,
-				Text = `LVL {progress.level}`,
-				TextColor3 = Color3.new(1, 1, 1),
-				TextSize = 32,
-				TextXAlignment = Enum.TextXAlignment.Right,
-			}, {
-				Gradient = e("UIGradient", { Color = BLUE_GRADIENT, Rotation = -90 }),
-				Stroke = e("UIStroke", {
-					Color = Color3.fromRGB(8, 16, 30),
-					Thickness = 2,
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
+				}, {
+					Outline = e("UIStroke", { Color = Theme.Ink, Thickness = 1.2 }),
 				}),
 			}),
 		}),

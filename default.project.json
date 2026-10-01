@@ -147,9 +147,6 @@
         "Client": {
           "$path": "src/tools/Revolver.client.luau"
         },
-        "AmmoHud": {
-          "$path": "src/tools/RevolverAmmoHud.luau"
-        },
         "DamageHud": {
           "$path": "src/tools/RevolverDamageHud.luau"
         },
