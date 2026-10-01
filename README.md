@@ -181,6 +181,35 @@ behavior, rendering, input, and multiplayer replication.
 Run `luau tests/UpgradeOffer.spec.luau` for the presentation state checks,
 including acknowledgement, retries, late replies, and death during an animation.
 
+## Dashing
+
+Press either **Shift** key to dash in your movement direction, or forward while
+standing still. Touch players have a **DASH** button near the jump controls.
+Each life starts with three charges. Dashes have a one-second cooldown, and
+missing charges recharge one at a time every 3.5 seconds. Spending another charge
+does not restart the recharge already in progress. Three spent charges therefore
+return at 3.5, 7, and 10.5 seconds after the first dash.
+
+Three aqua bars beneath the crosshair show available charges, recharge progress,
+and the cooldown. The default burst lasts 0.25 seconds at 72 studs per second;
+speed and timing are configured in `src/shared/DashConfig.luau`. Horizontal
+movement uses Roblox's [LinearVelocity constraint](https://create.roblox.com/docs/reference/engine/classes/LinearVelocity),
+preserving vertical motion and normal collisions. The server validates direction,
+character, charges, and cooldowns. Death and disconnects clean up active dashes
+and recharge tasks; respawning starts with three charges. Shift does not dash
+while typing or using the Roblox menu, and built-in Shift Lock is disabled so
+the key can be used with the game's existing aiming camera.
+
+Restart `rojo serve`, reconnect Studio, and restart Play to sync the new remote
+and input settings. Check movement in every direction, dashing while stationary
+and airborne, walls, spamming Shift, exhausting and recovering charges, and
+dying during a dash. Use Start Server with two players to check independent
+charges and motion replication; verify the touch button in mobile emulation.
+
+Run `python tests/run_dash.py --luau path/to/luau` for charge timing, invalid and
+rapid requests, player isolation, lifecycle, and cleanup checks. These use service
+fakes; movement feel, collisions, and rendering need verification in Studio.
+
 ## Consecutive-hit damage popup
 
 Revolver hits display that enemy's cumulative damage as a white number with

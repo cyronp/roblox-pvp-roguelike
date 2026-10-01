@@ -1,0 +1,8 @@
+return table.freeze({
+	MAX_CHARGES = 3,
+	COOLDOWN = 1,
+	RECHARGE_TIME = 3.5,
+	SPEED = 72,
+	DURATION = 0.25,
+	REQUEST_INTERVAL = 0.1,
+})

@@ -92,6 +92,9 @@
       },
       "ChooseUpgrade": {
         "$className": "RemoteEvent"
+      },
+      "Dash": {
+        "$className": "RemoteEvent"
       }
     },
 
@@ -166,6 +169,7 @@
     },
     "StarterPlayer": {
       "$properties": {
+        "EnableMouseLockOption": false,
         "CameraMode": "Classic",
         "CameraMinZoomDistance": 5
       },
