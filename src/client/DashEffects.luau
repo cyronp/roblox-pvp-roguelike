@@ -4,6 +4,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("DashConfig"))
 local Theme = require(Shared:WaitForChild("UITheme"))
+local GameplayAudio = require(script.Parent.GameplayAudio)
 local TRAIL_LIFETIME = 0.18
 local MAX_DISTANCE = 250
 local BURST_COUNT = 12
@@ -14,6 +15,7 @@ type Effect = {
 	trails: { Trail },
 	burst: Attachment,
 	particles: ParticleEmitter,
+	sound: Sound,
 	connections: { RBXScriptConnection },
 	endTask: thread?,
 	highlight: Highlight?,
@@ -47,6 +49,7 @@ local function remove(character: Model)
 	for _, connection in effect.connections do connection:Disconnect() end
 	for _, trail in effect.trails do trail:Clear() end
 	effect.particles:Clear()
+	effect.sound:Destroy()
 	for _, attachment in effect.attachments do attachment:Destroy() end
 end
 
@@ -108,6 +111,7 @@ local function create(character: Model, root: BasePart, humanoid: Humanoid): Eff
 	local effect: Effect = {
 		root = root, attachments = { burst }, trails = {}, burst = burst,
 		particles = particles, connections = {},
+		sound = GameplayAudio.create("Dash", root),
 	}
 	local halfWidth = root.Size.X / 2 + 0.35
 	addTrail(effect, Vector3.new(-halfWidth, 0.1, 0), 0.45)
@@ -139,6 +143,10 @@ function DashEffects.play(character: Model?, direction: Vector3)
 	-- Keep emitters and attachments between dashes; no Lua frame loop is needed.
 	local active = effect or create(character, root, humanoid)
 	stop(active)
+	if active.sound.SoundId ~= "" then
+		active.sound:Stop()
+		active.sound:Play()
+	end
 	for _, trail in active.trails do
 		trail:Clear()
 		trail.Enabled = true

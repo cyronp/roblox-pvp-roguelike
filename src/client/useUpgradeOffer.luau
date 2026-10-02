@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local React = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("React"))
 local Offer = require(script.Parent.UpgradeOfferState)
+local GameplayAudio = require(script.Parent.GameplayAudio)
 local player = Players.LocalPlayer
 local chooseRemote = ReplicatedStorage:WaitForChild("ChooseUpgrade") :: RemoteEvent
 
@@ -30,7 +31,12 @@ return function()
 
 	React.useEffect(function()
 		local function receive()
-			commit(Offer.receive(current.current, readSnapshot()))
+			local previous = current.current
+			local nextState = Offer.receive(previous, readSnapshot())
+			commit(nextState)
+			if nextState.selected and not previous.selected then
+				GameplayAudio.play("UpgradeChoose")
+			end
 		end
 		local changed = player:GetAttributeChangedSignal("UpgradeState"):Connect(receive)
 		local removing = player.CharacterRemoving:Connect(function()

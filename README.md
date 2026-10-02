@@ -94,6 +94,10 @@ sound, with volume 0.65 and distance attenuation from 12 to 180 studs.
 
 ## Kill confirmation and training dummy
 
+Original level-up, dash, and upgrade-selection WAVs and their playback hooks are
+also included, with uploaded SoundIds configured; see
+[gameplay audio setup](assets/audio/README.md) for files, configuration, and checks.
+
 Kill confirmation uses `rbxassetid://83811330659090`; grant the experience access
 to this audio too. The server notifies only the shooter when their revolver hit
 reduces a living target to zero health. Nonlethal hits, protected targets, and

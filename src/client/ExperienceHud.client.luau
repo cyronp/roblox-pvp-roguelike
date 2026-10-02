@@ -10,6 +10,7 @@ local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ExperienceConfig"))
 local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
+local GameplayAudio = require(script.Parent.GameplayAudio)
 local e = React.createElement
 
 type Progress = { level: number, xp: number }
@@ -32,6 +33,7 @@ local function ExperienceHud()
 
 	React.useEffect(function()
 		local pendingUpdate: thread? = nil
+		local lastLevel = readProgress().level
 		local function scheduleUpdate()
 			if pendingUpdate then
 				return
@@ -39,7 +41,12 @@ local function ExperienceHud()
 			-- Read the level and XP together after a batch of replicated attribute changes.
 			pendingUpdate = task.defer(function()
 				pendingUpdate = nil
-				setProgress(readProgress())
+				local nextProgress = readProgress()
+				if nextProgress.level > lastLevel then
+					GameplayAudio.play("LevelUp")
+				end
+				lastLevel = nextProgress.level
+				setProgress(nextProgress)
 			end)
 		end
 		local levelConnection = player:GetAttributeChangedSignal("Level"):Connect(scheduleUpdate)

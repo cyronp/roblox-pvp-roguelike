@@ -99,6 +99,33 @@
     },
 
     "SoundService": {
+      "LevelUp": {
+        "$className": "Sound",
+        "$properties": {
+          "SoundId": "rbxassetid://140365393752838",
+          "Volume": 0.5,
+          "Looped": false
+        }
+      },
+      "Dash": {
+        "$className": "Sound",
+        "$properties": {
+          "SoundId": "rbxassetid://126195029759598",
+          "Volume": 0.45,
+          "Looped": false,
+          "RollOffMode": "InverseTapered",
+          "RollOffMinDistance": 8,
+          "RollOffMaxDistance": 75
+        }
+      },
+      "UpgradeChoose": {
+        "$className": "Sound",
+        "$properties": {
+          "SoundId": "rbxassetid://126535972501908",
+          "Volume": 0.45,
+          "Looped": false
+        }
+      },
       "KillConfirmation": {
         "$className": "Sound",
         "$properties": {
