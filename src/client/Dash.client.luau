@@ -8,7 +8,6 @@ local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("Dash") :: RemoteEvent
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DashConfig"))
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
-local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
@@ -47,30 +46,26 @@ ContextActionService:SetPosition(ACTION, UDim2.new(1, -160, 1, -160))
 
 local function styleTouchButton()
 	local button = ContextActionService:GetButton(ACTION)
-	if not button or button:FindFirstChild("CartoonCorner") then return end
+	if not button or button:FindFirstChild("CombatCorner") then return end
 	button.Image = ""
-	button.BackgroundColor3 = Theme.White
-	button.BackgroundTransparency = 0
+	button.BackgroundColor3 = Theme.CombatSurface
+	button.BackgroundTransparency = 0.12
 	button.BorderSizePixel = 0
 	button.Size = UDim2.fromOffset(64, 64)
 	local corner = Instance.new("UICorner")
-	corner.Name = "CartoonCorner"
-	corner.CornerRadius = UDim.new(0, 18)
+	corner.Name = "CombatCorner"
+	corner.CornerRadius = UDim.new(0, 8)
 	corner.Parent = button
 	local outline = Instance.new("UIStroke")
-	outline.Color = Theme.Ink
-	outline.Thickness = 3
+	outline.Color = Theme.CombatLine
+	outline.Thickness = 1
 	outline.Parent = button
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = Theme.GoldGradient
-	gradient.Rotation = 90
-	gradient.Parent = button
 	for _, child in button:GetDescendants() do
 		if child:IsA("TextLabel") then
-			child.FontFace = UIFonts.ExtraBold
-			child.TextColor3 = Theme.Ink
+			child.Font = Enum.Font.GothamMedium
+			child.TextColor3 = Theme.CombatText
 			child.TextStrokeTransparency = 1
-			child.TextSize = 16
+			child.TextSize = 14
 		end
 	end
 end

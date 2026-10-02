@@ -90,7 +90,7 @@ local function StreakHud(props: Props)
 		ref = panelRef,
 		Name = "HitStreak",
 		AnchorPoint = Vector2.new(1, 0),
-		-- Show temporary streak feedback beneath the combined combat HUD.
+		-- Temporary streak feedback keeps its own space at the upper right.
 		Position = UDim2.new(1, -20, 0, 72),
 		Size = UDim2.fromOffset(76, 60),
 		BackgroundTransparency = 1,

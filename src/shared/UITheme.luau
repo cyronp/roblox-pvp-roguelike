@@ -1,5 +1,9 @@
 -- Shared visual tokens keep the combat HUD and upgrade cards in the same style.
 local Theme = {
+	CombatSurface = Color3.fromRGB(25, 26, 28),
+	CombatText = Color3.fromRGB(239, 239, 236),
+	CombatMuted = Color3.fromRGB(157, 159, 162),
+	CombatLine = Color3.fromRGB(70, 72, 75),
 	Ink = Color3.fromRGB(36, 51, 73),
 	Paper = Color3.fromRGB(255, 248, 236),
 	PaperShade = Color3.fromRGB(231, 216, 189),

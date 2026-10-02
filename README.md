@@ -41,12 +41,16 @@ rounded corners, bright accents, and bottom spacing. The HUD uses Nunito Bold
 and ExtraBold from `src/shared/UIFonts.luau`. Upgrade shells, level badges,
 input hints, progress meters, damage numbers, and streak colors use this palette.
 
-Ammo and dash charges share one compact cream panel at the upper right, away
-from the character. Three cyan bars show charges: filled bars dim during the
-one-second dash lockout, and the next empty bar fills over 3.5 seconds. The UI
-does not show dash countdown numbers. The gold shooting cooldown stays at the
-crosshair; temporary hit streak feedback appears below the combined panel. Mobile has a matching gold
-DASH button and upgrade selection buttons at least 44 pixels tall and wide.
+Ammo and dash charges share a compact charcoal panel at the bottom right, above
+the XP dock. A static 3D preview of the equipped revolver sits left of the large
+ammo count, with a smaller capacity and reload label. The preview copies only
+weapon geometry and refreshes when equipment changes. Three neutral bars below
+show dash charges: filled bars dim during the one-second lockout, and the next
+empty bar fills over 3.5 seconds. The panel scales down on smaller screens and
+sits above the touch controls on mobile, which also use a charcoal DASH button.
+The gold shooting cooldown stays at the crosshair; temporary hit streak feedback
+keeps its separate space at the upper right. Upgrade selection buttons remain
+at least 44 pixels tall and wide.
 
 The bottom dock combines a gold level badge and rounded blue XP meter, with
 space reserved above it for owned upgrade cards. Owned cards have colored level
@@ -203,7 +207,7 @@ missing charges recharge one at a time every 3.5 seconds. Spending another charg
 does not restart the recharge already in progress. Three spent charges therefore
 return at 3.5, 7, and 10.5 seconds after the first dash.
 
-Three cyan bars beside ammo at the upper right show available charges and
+Three neutral bars below ammo at the bottom right show available charges and
 recharge progress; filled bars dim during the one-second cooldown. The default burst lasts 0.25 seconds at 72 studs per second;
 speed and timing are configured in `src/shared/DashConfig.luau`. Horizontal
 movement uses Roblox's [LinearVelocity constraint](https://create.roblox.com/docs/reference/engine/classes/LinearVelocity),
@@ -226,8 +230,8 @@ fakes; movement feel, collisions, and rendering need verification in Studio.
 ## Consecutive-hit damage popup
 
 Revolver hits display that enemy's cumulative damage as a cream number with
-a navy outline at its upper right. A `1x`, `2x`, `3x` hit streak appears directly below
-the combined combat panel: 1–3x is cream, 4–6x blue, 7–8x
+a navy outline at its upper right. A `1x`, `2x`, `3x` hit streak appears at
+the upper right of the screen: 1–3x is cream, 4–6x blue, 7–8x
 orange, and 9x or higher uses a fire gradient with animated embers. Its
 countdown bar sits tightly underneath and uses the same color tier. On each
 hit, the damage number snaps from a slight shrink to roughly 1.6–1.7 times
@@ -258,8 +262,8 @@ streak, and expiration calculations run on the server. Tuning values are in
 Restart Rojo to sync the HUD modules, then restart Play. Hit the training
 dummy three times: the feedback should show
 `35 / 1x`, `70 / 2x`, then `100 / 3x` with one kill confirmation. The damage
-appears at the dummy's upper right and the count beneath the combat panel. Shoot another
-dummy before the deadline to see `35` above that dummy and `4x` under the ammo.
+appears at the dummy's upper right and the count at the screen's upper right. Shoot another
+dummy before the deadline to see `35` above that dummy and a `4x` streak.
 In a separate run, shoot the same dummy promptly after it respawns to continue
 at `135 / 4x`; verify that each
 dummy respawns in its own position without affecting the others. Miss between
