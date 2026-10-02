@@ -126,6 +126,7 @@ local requestConnection = remote.OnServerEvent:Connect(function(player: Player, 
 		or run.root.Anchored or not run.root:IsDescendantOf(workspace) then return end
 	if not Charges.spend(run.state, now) then return end
 	startMotion(run, flat.Unit)
+	remote:FireAllClients(run.character, flat.Unit)
 	publish(run)
 	scheduleRecharge(player, run)
 end)

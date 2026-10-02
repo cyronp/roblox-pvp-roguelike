@@ -8,6 +8,8 @@ local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("Dash") :: RemoteEvent
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DashConfig"))
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
+local DashEffects = require(script.Parent.DashEffects)
+local effectsConnection = remote.OnClientEvent:Connect(DashEffects.play)
 local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
@@ -81,6 +83,8 @@ hudRoot:render(ReactRoblox.createPortal(
 ))
 
 script.Destroying:Connect(function()
+	effectsConnection:Disconnect()
+	DashEffects.destroy()
 	touchConnection:Disconnect()
 	ContextActionService:UnbindAction(ACTION)
 	hudRoot:unmount()

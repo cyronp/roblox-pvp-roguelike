@@ -217,6 +217,15 @@ and recharge tasks; respawning starts with three charges. Shift does not dash
 while typing or using the Roblox menu, and built-in Shift Lock is disabled so
 the key can be used with the game's existing aiming camera.
 
+Server-confirmed dashes also play blue-white speed trails, a backward spark burst,
+and a brief fading character glow for nearby players. Effects render locally and
+reuse their attachments between dashes, with cleanup on death or character removal.
+Visual tuning lives in `src/client/DashEffects.luau`; no uploaded assets are needed.
+In Studio, check forward, sideways, backward, and airborne dashes, natural trail
+fade-out, and death/respawn during the effect. With two players, confirm each can
+see the other's dash and rejected requests produce no effects. Check mobile
+emulation and low graphics quality too.
+
 Restart `rojo serve`, reconnect Studio, and restart Play to sync the new remote
 and input settings. Check movement in every direction, dashing while stationary
 and airborne, walls, spamming Shift, exhausting and recovering charges, and

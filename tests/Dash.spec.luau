@@ -75,6 +75,10 @@ local Enum = {
 }
 local workspace = { GetServerTimeNow = function() return now end }
 local remote = { OnServerEvent = signal() }
+local broadcasts = {}
+function remote:FireAllClients(character, direction)
+	table.insert(broadcasts, { character = character, direction = direction })
+end
 local shared = { WaitForChild = function(_, name) return name end }
 local players = { PlayerAdded = signal(), PlayerRemoving = signal(), GetPlayers = function() return {} end }
 local game = { GetService = function(_, name)
@@ -138,14 +142,18 @@ players.PlayerAdded:Fire(other)
 assert(player.Character.attributes.DashCharges == 3 and other.Character.attributes.DashCharges == 3)
 remote.OnServerEvent:Fire(player, player.Character, forward)
 assert(player.Character.attributes.DashCharges == 2 and liveConstraints() == 1)
+assert(#broadcasts == 1 and broadcasts[1].character == player.Character)
+assert(broadcasts[1].direction.Magnitude == 1, "Accepted dashes must broadcast the normalized direction")
 remote.OnServerEvent:Fire(player, player.Character, forward)
 assert(player.Character.attributes.DashCharges == 2, "Spam must not spend extra charges")
+assert(#broadcasts == 1, "Spam must not broadcast extra effects")
 advanceTo(100.25)
 assert(liveConstraints() == 0 and root.AssemblyLinearVelocity.Y == -12)
 assert(root.AssemblyLinearVelocity.X == 16, "Dash completion must remove excess horizontal momentum")
 advanceTo(100.5)
 remote.OnServerEvent:Fire(player, player.Character, forward)
 assert(player.Character.attributes.DashCharges == 2, "Server cooldown must reject early requests")
+assert(#broadcasts == 1, "Cooldown rejection must not play effects")
 advanceTo(101)
 remote.OnServerEvent:Fire(player, player.Character, forward)
 advanceTo(102)
@@ -162,6 +170,7 @@ advanceTo(110.5)
 assert(player.Character.attributes.DashCharges == 3 and player.Character.attributes.DashRechargeAt == 0)
 assert(other.Character.attributes.DashCharges == 3, "Players must have independent charge supplies")
 
+local acceptedCount = #broadcasts
 for _, invalid in { "forward", {}, 123, Vector3.new(0, 0, 0), Vector3.new(2, 0, 0),
 	Vector3.new(1, 1, 0), Vector3.new(math.huge, 0, 0), Vector3.new(0 / 0, 0, 0) } do
 	advanceTo(now + 0.2)
@@ -180,6 +189,7 @@ advanceTo(now + 0.2)
 remote.OnServerEvent:Fire(player, player.Character, forward)
 assert(player.Character.attributes.DashCharges == 3)
 root.Anchored = false
+assert(#broadcasts == acceptedCount, "Invalid or disallowed dashes must not broadcast effects")
 
 advanceTo(now + 0.2)
 remote.OnServerEvent:Fire(player, player.Character, forward)
@@ -192,8 +202,10 @@ humanoid.Health = 0
 humanoid.Died:Fire()
 assert(liveConstraints() == 0 and oldCharacter.attributes.DashCharges == 0)
 advanceTo(now + 10)
+acceptedCount = #broadcasts
 remote.OnServerEvent:Fire(player, oldCharacter, forward)
 assert(oldCharacter.attributes.DashCharges == 0, "Death must cancel recharge work and reject requests")
+assert(#broadcasts == acceptedCount, "Dead characters must not play dash effects")
 player.CharacterRemoving:Fire(oldCharacter)
 local nextCharacter = makeCharacter()
 player.Character = nextCharacter
@@ -201,6 +213,7 @@ player.CharacterAdded:Fire(nextCharacter)
 assert(nextCharacter.attributes.DashCharges == 3)
 remote.OnServerEvent:Fire(player, oldCharacter, forward)
 assert(nextCharacter.attributes.DashCharges == 3, "A previous life's request cannot dash the new character")
+assert(#broadcasts == acceptedCount, "A previous life's request must not broadcast effects")
 advanceTo(now + 0.2)
 remote.OnServerEvent:Fire(player, nextCharacter, forward)
 assert(liveConstraints() == 1)
