@@ -68,6 +68,12 @@
       }
     },
 
+    "Workspace": {
+      "Arena": {
+        "$path": "assets/arena/Arena.rbxmx"
+      }
+    },
+
     "ReplicatedStorage": {
       "Assets": {
         "$className": "Folder",
