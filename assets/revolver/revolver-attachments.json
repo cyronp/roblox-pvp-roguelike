@@ -1,0 +1,37 @@
+{
+  "units": "studs (import with File Dimensions set to Studs)",
+  "axes": "Roblox: barrel along -Z, up +Y",
+  "overall_size": [
+    0.34,
+    1.174,
+    2.233
+  ],
+  "triangles": {
+    "Revolver_Steel": 11618,
+    "Revolver_Grip": 1796
+  },
+  "relative_to_grip_meshpart_center": {
+    "hand_point": [
+      -0.0,
+      0.005,
+      -0.063
+    ],
+    "muzzle": [
+      -0.0,
+      0.505,
+      -2.003
+    ],
+    "steel_meshpart_center": [
+      -0.0,
+      0.356,
+      -0.973
+    ]
+  },
+  "relative_to_steel_meshpart_center": {
+    "muzzle": [
+      -0.0,
+      0.148,
+      -1.03
+    ]
+  }
+}

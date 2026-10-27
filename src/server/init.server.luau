@@ -11,6 +11,7 @@ local revolverTemplate = ServerStorage:WaitForChild("Revolver") :: Tool
 local DamageStreak = require(script:WaitForChild("DamageStreak"))
 local Experience = require(script:WaitForChild("Experience"))
 local Upgrades = require(script:WaitForChild("Upgrades"))
+local RevolverModel = require(script:WaitForChild("RevolverModel"))
 local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 
 local RANGE = 300
@@ -58,16 +59,20 @@ local function prepareRevolver(tool: Tool)
 		return
 	end
 
-	addPiece(handle, "Frame", Vector3.new(0.48, 0.32, 0.75), CFrame.new(0, 0.56, -0.24), steel)
-	addPiece(handle, "Cylinder", Vector3.new(0.52, 0.43, 0.43), CFrame.new(0, 0.52, -0.48), darkSteel, Enum.PartType.Cylinder)
-	addPiece(handle, "Barrel", Vector3.new(0.27, 0.27, 1.05), CFrame.new(0, 0.59, -1.15), steel)
-	addPiece(handle, "FrontSight", Vector3.new(0.08, 0.12, 0.1), CFrame.new(0, 0.79, -1.6), darkSteel)
-	addPiece(handle, "Hammer", Vector3.new(0.2, 0.16, 0.2), CFrame.new(0, 0.78, 0.16), darkSteel)
-	addPiece(handle, "TriggerGuard", Vector3.new(0.06, 0.12, 0.45), CFrame.new(0, 0.12, -0.2), darkSteel)
-
 	local muzzle = Instance.new("Attachment")
 	muzzle.Name = "Muzzle"
-	muzzle.Position = Vector3.new(0, 0.59, -1.7)
+	local modelMuzzle = RevolverModel.attach(handle)
+	if modelMuzzle then
+		muzzle.Position = modelMuzzle
+	else
+		addPiece(handle, "Frame", Vector3.new(0.48, 0.32, 0.75), CFrame.new(0, 0.56, -0.24), steel)
+		addPiece(handle, "Cylinder", Vector3.new(0.52, 0.43, 0.43), CFrame.new(0, 0.52, -0.48), darkSteel, Enum.PartType.Cylinder)
+		addPiece(handle, "Barrel", Vector3.new(0.27, 0.27, 1.05), CFrame.new(0, 0.59, -1.15), steel)
+		addPiece(handle, "FrontSight", Vector3.new(0.08, 0.12, 0.1), CFrame.new(0, 0.79, -1.6), darkSteel)
+		addPiece(handle, "Hammer", Vector3.new(0.2, 0.16, 0.2), CFrame.new(0, 0.78, 0.16), darkSteel)
+		addPiece(handle, "TriggerGuard", Vector3.new(0.06, 0.12, 0.45), CFrame.new(0, 0.12, -0.2), darkSteel)
+		muzzle.Position = Vector3.new(0, 0.59, -1.7)
+	end
 	muzzle.Parent = handle
 
 	if tool:GetAttribute("Ammo") == nil then

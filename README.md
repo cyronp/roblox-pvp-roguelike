@@ -77,6 +77,18 @@ to your current world, then save the place in Studio. When opening the standalon
 `Test.rbxlx`, rebuild it first. Check the result in Play and mobile emulation;
 post-processing and shadows can vary with the client's graphics quality.
 
+## Revolver model
+
+The revolver mesh is built in Blender by `tools/build_revolver.py`; see
+`assets/revolver/README.md`. Its Studio import of `revolver.fbx` was uploaded as model
+`112277398227118`. When the server starts, `src/server/RevolverModel.luau` loads that model
+with `InsertService` and welds its `Revolver_Grip` and `Revolver_Steel` MeshParts around the
+tool's handle. The handle becomes invisible but still positions the gun in the hand and plays
+the gunshot. The `Muzzle` attachment is placed at the end of the barrel. If the model cannot
+load, the server warns and builds the old block placeholder. `LoadAsset` only works for assets
+owned by the experience's owner, so a group-owned experience needs the model uploaded to
+that group.
+
 ## Revolver firing audio
 
 The original gunshot is `assets/audio/revolver-shot.wav` (0.4 seconds, mono).
