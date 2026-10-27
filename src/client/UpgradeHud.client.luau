@@ -15,10 +15,13 @@ local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIT
 local CardView = require(script.Parent.UpgradeCardView)
 local UpgradeInventory = require(script.Parent.UpgradeInventory)
 local useUpgradeOffer = require(script.Parent.useUpgradeOffer)
+local HudKit = require(script.Parent.HudKit)
 local e = React.createElement
 local ACTION = "ChooseUpgradeCard"
 local KEYS = { Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three }
 local KEY_HINTS = { "1", "1 / 2", "1 / 2 / 3" }
+local BANNER_HEIGHT = 44
+local CARDS_TOP = BANNER_HEIGHT + 12
 
 local function UpgradeHud()
 	local state, choose = useUpgradeOffer()
@@ -39,7 +42,7 @@ local function UpgradeHud()
 		and 16 + cardWidth * 3 + 20 > viewportSize.X / 2 - inventoryWidth * 1.6 then
 		choiceBottom = math.max(choiceBottom, inventoryHeight + Theme.InventoryBottom + 10)
 	end
-	cardWidth = math.min(cardWidth, math.max(60, viewportSize.Y - choiceBottom - 116) * 2.54 / 3.54)
+	cardWidth = math.min(cardWidth, math.max(60, viewportSize.Y - choiceBottom - 122) * 2.54 / 3.54)
 	cardHeight = cardWidth * 3.54 / 2.54
 	local hint = if touch then "TAP TO PICK" else `PICK {KEY_HINTS[#snapshot.choices] or ""}`
 	local queueHint = if snapshot.pending > 1 then `  +{snapshot.pending - 1} QUEUED` else ""
@@ -117,41 +120,39 @@ local function UpgradeHud()
 			Choices = e("Frame", {
 				AnchorPoint = Vector2.new(0, 1),
 				Position = UDim2.new(0, 16, 1, -choiceBottom),
-				Size = UDim2.fromOffset(cardWidth * 3 + 20, cardHeight + 100),
+				Size = UDim2.fromOffset(cardWidth * 3 + 20, cardHeight + 50 + CARDS_TOP),
 				BackgroundTransparency = 1,
 				Active = false,
 				Visible = hasOffer,
 			}, {
-				Banner = e("Frame", {
-					Size = UDim2.new(1, 0, 0, 42),
-					BackgroundColor3 = Theme.Paper,
-					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
-					Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border }),
-					Title = e("TextLabel", {
-						Position = UDim2.fromOffset(10, 2), Size = UDim2.new(1, -20, 0, 21),
-						BackgroundTransparency = 1, FontFace = UIFonts.ExtraBold,
-						Text = if state.selected then "UPGRADE ADDED!" elseif state.requested then "CHOOSING..." else "LEVEL UP!",
-						TextColor3 = Theme.Ink, TextXAlignment = Enum.TextXAlignment.Left,
-						TextScaled = true,
-					}, { Bounds = e("UITextSizeConstraint", { MinTextSize = 11, MaxTextSize = 18 }) }),
-					Hint = e("TextLabel", {
-						Position = UDim2.fromOffset(10, 24), Size = UDim2.new(1, -20, 0, 14),
-						BackgroundTransparency = 1,
-						Active = false,
-						FontFace = UIFonts.Bold,
-						Text = `{hint}{queueHint}`,
-						TextColor3 = Theme.Muted,
-						TextXAlignment = Enum.TextXAlignment.Left,
-						TextScaled = true,
-					}, {
-						Bounds = e("UITextSizeConstraint", { MinTextSize = 9, MaxTextSize = 11 }),
-					}),
+				Banner = e(HudKit.Panel, {
+					position = UDim2.fromOffset(0, 0),
+					size = UDim2.new(1, 0, 0, BANNER_HEIGHT),
+					children = {
+						Title = HudKit.label({
+							Position = UDim2.fromOffset(12, 3), Size = UDim2.new(1, -24, 0, 24),
+							Text = if state.selected then "UPGRADE ADDED!" elseif state.requested then "CHOOSING..." else "LEVEL UP!",
+							TextColor3 = Theme.GoldLight,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							TextScaled = true,
+						}, 2.5, { Bounds = e("UITextSizeConstraint", { MinTextSize = 12, MaxTextSize = 22 }) }),
+						Hint = e("TextLabel", {
+							Position = UDim2.fromOffset(12, 27), Size = UDim2.new(1, -24, 0, 14),
+							BackgroundTransparency = 1,
+							Active = false,
+							FontFace = UIFonts.ExtraBold,
+							Text = `{hint}{queueHint}`,
+							TextColor3 = Theme.TextMuted,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							TextScaled = true,
+						}, {
+							Bounds = e("UITextSizeConstraint", { MinTextSize = 9, MaxTextSize = 12 }),
+						}),
+					},
 				}),
 				Cards = e("Frame", {
-					Position = UDim2.fromOffset(0, 50),
-					Size = UDim2.new(1, 0, 1, -50),
+					Position = UDim2.fromOffset(0, CARDS_TOP),
+					Size = UDim2.new(1, 0, 1, -CARDS_TOP),
 					BackgroundTransparency = 1,
 					Active = false,
 				}, cards),

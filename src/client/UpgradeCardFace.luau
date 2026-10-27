@@ -20,7 +20,7 @@ local function project(angle, x: number, y: number, width: number, height: numbe
 	}
 end
 
-local function label(text: string, bounds, maxSize: number, color: Color3, fade, outline: number?)
+local function label(text: string, bounds, maxSize: number, color: Color3, fade, outline: number?, font: Font?)
 	return e("TextLabel", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = bounds.position,
@@ -28,7 +28,7 @@ local function label(text: string, bounds, maxSize: number, color: Color3, fade,
 		Visible = bounds.visible,
 		BackgroundTransparency = 1,
 		Active = false,
-		FontFace = UIFonts.ExtraBold,
+		FontFace = font or UIFonts.ExtraBold,
 		Text = text,
 		TextColor3 = color,
 		TextTransparency = fade,
@@ -93,7 +93,8 @@ return function(props)
 			LightDirection = Vector3.new(-1, -1, -2),
 		}),
 		-- Project each UI region onto the rotating front, hiding it on the back.
-		Title = label(string.upper(props.title), project(angle, 0.5, 0.113, 0.81, 0.11), 22, Color3.new(1, 1, 1), fade, if props.compact then 0.65 else 1.2),
+		Title = label(string.upper(props.title), project(angle, 0.5, 0.113, 0.81, 0.11), 22, Color3.new(1, 1, 1), fade,
+			if props.compact then 0.8 else 1.6, UIFonts.Display),
 		Art = e("ImageLabel", {
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = artwork.position,
@@ -112,6 +113,7 @@ return function(props)
 		}),
 		Description = label(if props.compact then "TOTAL BONUS" else style.description,
 			project(angle, 0.5, 0.703, 0.81, 0.154), if props.compact then 13 else 19, INK, fade),
-		Buff = label(props.buff or style.buff, project(angle, 0.5, 0.881, 0.81, 0.095), 21, Color3.new(1, 1, 1), fade),
+		Buff = label(props.buff or style.buff, project(angle, 0.5, 0.881, 0.81, 0.095), 21, Color3.new(1, 1, 1), fade,
+			if props.compact then 0.8 else 1.4, UIFonts.Display),
 	})
 end

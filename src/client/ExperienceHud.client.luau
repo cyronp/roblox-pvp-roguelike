@@ -8,9 +8,10 @@ local packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(packages:WaitForChild("React"))
 local ReactRoblox = require(packages:WaitForChild("ReactRoblox"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ExperienceConfig"))
-local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local GameplayAudio = require(script.Parent.GameplayAudio)
+local HealthBar = require(script.Parent.HealthBar)
+local HudKit = require(script.Parent.HudKit)
 local e = React.createElement
 
 type Progress = { level: number, xp: number }
@@ -24,12 +25,73 @@ local function readProgress(): Progress
 	}
 end
 
+local VITALS_GAP = 10
+
+local function LevelBadge(props: { level: number })
+	local scaleRef = React.useRef(nil)
+	local shownLevel = React.useRef(props.level)
+
+	React.useEffect(function()
+		local scale = scaleRef.current
+		local leveledUp = props.level > shownLevel.current
+		shownLevel.current = props.level
+		if not scale or not leveledUp then
+			return
+		end
+		scale.Scale = 1.35
+		local settle = TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+		settle:Play()
+		return function()
+			settle:Cancel()
+			settle:Destroy()
+			scale.Scale = 1
+		end
+	end, { props.level })
+
+	return e("Frame", {
+		Name = "Level",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromOffset(Theme.VitalsHeight / 2, Theme.VitalsHeight / 2),
+		Size = UDim2.fromOffset(Theme.VitalsHeight, Theme.VitalsHeight),
+		BackgroundTransparency = 1,
+		Active = false,
+		ZIndex = 2,
+	}, {
+		Scale = e("UIScale", { ref = scaleRef }),
+		Badge = e(HudKit.Panel, {
+			position = UDim2.fromScale(0, 0),
+			size = UDim2.fromScale(1, 1),
+			gradient = Theme.GoldGradient,
+			lipColor = Theme.GoldDark,
+			children = {
+				Caption = HudKit.label({
+					Position = UDim2.fromOffset(0, 5),
+					Size = UDim2.new(1, 0, 0, 13),
+					Text = "LVL",
+					TextSize = 13,
+				}, 1.5),
+				Number = HudKit.label({
+					Position = UDim2.fromOffset(4, 18),
+					Size = UDim2.new(1, -8, 1, -22),
+					Text = tostring(props.level),
+					TextScaled = true,
+				}, 2.5, {
+					Bounds = e("UITextSizeConstraint", { MinTextSize = 14, MaxTextSize = 30 }),
+				}),
+			},
+		}),
+	})
+end
+
 local function ExperienceHud()
 	local progress, setProgress = React.useState(readProgress())
+	local viewportWidth, setViewportWidth = React.useState(1280)
 	local fillRef = React.useRef(nil)
 	local previousLevel = React.useRef(progress.level)
 	local requiredXp = Config.getRequiredXp(progress.level)
 	local fraction = math.clamp(progress.xp / requiredXp, 0, 1)
+	local dockWidth = math.clamp(viewportWidth * 0.42, 260, 460)
+	local barsLeft = Theme.VitalsHeight + VITALS_GAP
 
 	React.useEffect(function()
 		local pendingUpdate: thread? = nil
@@ -90,58 +152,43 @@ local function ExperienceHud()
 		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	}, {
-		Dock = e("Frame", {
-			AnchorPoint = Vector2.new(0.5, 1),
-			Position = UDim2.new(0.5, 0, 1, -Theme.BottomInset),
-			Size = UDim2.new(1, -32, 0, Theme.ProgressHeight),
+		Bounds = e("Frame", {
+			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
+			Active = false,
+			[React.Change.AbsoluteSize] = function(frame: Frame)
+				setViewportWidth(frame.AbsoluteSize.X)
+			end,
 		}, {
-			Level = e("TextLabel", {
-				Size = UDim2.fromOffset(78, Theme.ProgressHeight),
-				BackgroundColor3 = Theme.White,
-				BorderSizePixel = 0,
-				FontFace = UIFonts.ExtraBold,
-				Text = `LVL {progress.level}`,
-				TextColor3 = Theme.Ink,
-				TextScaled = true,
+			-- Level, health, and XP share one compact cluster at the bottom center.
+			Dock = e("Frame", {
+				AnchorPoint = Vector2.new(0.5, 1),
+				Position = UDim2.new(0.5, 0, 1, -(Theme.BottomInset + Theme.Lip)),
+				Size = UDim2.fromOffset(dockWidth, Theme.VitalsHeight),
+				BackgroundTransparency = 1,
+				Active = false,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
-				Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
-				Gradient = e("UIGradient", { Color = Theme.GoldGradient, Rotation = 90 }),
-				Padding = e("UIPadding", { PaddingLeft = UDim.new(0, 7), PaddingRight = UDim.new(0, 7) }),
-				Bounds = e("UITextSizeConstraint", { MinTextSize = 11, MaxTextSize = 18 }),
-			}),
-			Track = e("Frame", {
-				Position = UDim2.fromOffset(88, 3),
-				Size = UDim2.new(1, -88, 1, -6),
-				BackgroundColor3 = Theme.Ink,
-				BorderSizePixel = 0,
-			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
-				Outline = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border }),
-				Fill = e("Frame", {
-					ref = fillRef,
-					Size = UDim2.fromScale(0, 1),
-					BackgroundColor3 = Theme.White,
-					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
-					Gradient = e("UIGradient", { Color = Theme.BlueGradient, Rotation = 90 }),
-					Shine = e("Frame", {
-						Position = UDim2.fromScale(0.04, 0.12), Size = UDim2.fromScale(0.92, 0.14),
-						BackgroundColor3 = Theme.White, BackgroundTransparency = 0.65, BorderSizePixel = 0,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(1, 0) }) }),
+				Level = e(LevelBadge, { level = progress.level }),
+				Health = e(HealthBar, {
+					player = player,
+					position = UDim2.fromOffset(barsLeft, 0),
+					size = UDim2.new(1, -barsLeft, 0, 32),
 				}),
-				Progress = e("TextLabel", {
-					Size = UDim2.fromScale(1, 1),
-					BackgroundTransparency = 1,
-					FontFace = UIFonts.ExtraBold,
-					Text = `{progress.xp} / {requiredXp} XP`,
-					TextColor3 = Theme.Paper,
-					TextSize = 13,
-					ZIndex = 2,
-				}, {
-					Outline = e("UIStroke", { Color = Theme.Ink, Thickness = 1.2 }),
+				Experience = e(HudKit.Meter, {
+					position = UDim2.fromOffset(barsLeft, 40),
+					size = UDim2.new(1, -barsLeft, 0, 18),
+					fraction = fraction,
+					fillRef = fillRef,
+					radius = 8,
+					gradient = Theme.BlueGradient,
+					children = {
+						Progress = HudKit.label({
+							Size = UDim2.fromScale(1, 1),
+							Text = `{progress.xp} / {requiredXp} XP`,
+							TextSize = 13,
+							ZIndex = 3,
+						}, 1.5),
+					},
 				}),
 			}),
 		}),

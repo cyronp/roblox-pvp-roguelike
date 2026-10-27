@@ -38,16 +38,17 @@ local function StreakTimer(props: Props)
 	return e("Frame", {
 		Name = "StreakCountdown",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 34),
-		Size = UDim2.fromOffset(52, 6),
+		Position = UDim2.new(0.5, 0, 0, 50),
+		Size = UDim2.fromOffset(64, 10),
 		BackgroundTransparency = 1,
 	}, {
 		Track = e("Frame", {
 			Size = UDim2.fromScale(1, 1),
-			BackgroundColor3 = Theme.Ink,
+			BackgroundColor3 = Theme.Track,
 			BorderSizePixel = 0,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(1, 0) }),
+			Outline = e("UIStroke", { Color = Theme.Outline, Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
 			Fill = e("Frame", {
 				Size = remaining:map(function(seconds: number)
 					return UDim2.fromScale(math.clamp(seconds / props.duration, 0, 1), 1)

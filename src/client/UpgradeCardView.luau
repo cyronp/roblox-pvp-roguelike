@@ -93,6 +93,25 @@ return function(props: Props)
 		end
 	end, { props.mode })
 
+	local chosen = props.mode == "chosen"
+	local keyProps: { [any]: any } = {
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.fromScale(0.5, 1),
+		Size = UDim2.fromOffset(if props.touch then math.clamp(props.width, 44, 64) else 40, 44 + Theme.Lip),
+		BackgroundTransparency = 1,
+		Active = props.touch,
+	}
+	if props.touch then
+		keyProps.Text = ""
+		keyProps.AutoButtonColor = false
+		keyProps.Selectable = false
+		keyProps[React.Event.Activated] = function(_, input: InputObject)
+			if input.UserInputType == Enum.UserInputType.Touch then
+				props.onChoose(props.index)
+			end
+		end
+	end
+
 	return e("Frame", {
 		LayoutOrder = props.index,
 		Size = UDim2.fromOffset(props.width, height + 50),
@@ -113,30 +132,40 @@ return function(props: Props)
 				BackgroundTransparency = 1,
 				Active = false,
 			}, { Content = e(CardFace, { id = props.id, title = props.title, fade = fade, spinning = props.mode == "chosen" }) }),
-			Key = e(if props.touch then "TextButton" else "TextLabel", {
-				AnchorPoint = Vector2.new(0.5, 1),
-				Position = UDim2.fromScale(0.5, 1),
-				Size = UDim2.fromOffset(if props.touch then math.clamp(props.width, 44, 64) else 40, 44),
-				BackgroundColor3 = if props.mode == "chosen" then style.color else Theme.Paper,
-				BackgroundTransparency = fade,
-				BorderSizePixel = 0,
-				Active = props.touch,
-				Selectable = false,
-				FontFace = UIFonts.ExtraBold,
-				Text = if props.mode == "chosen" then "✓" else tostring(props.index),
-				TextSize = 23,
-				TextColor3 = INK,
-				TextTransparency = fade,
-				[React.Event.Activated] = if props.touch then function(_, input: InputObject)
-					if input.UserInputType == Enum.UserInputType.Touch then
-						props.onChoose(props.index)
-					end
-				end else nil,
-			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
-				Outline = e("UIStroke", {
-					Color = INK, Thickness = Theme.Border, Transparency = fade,
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Key = e(if props.touch then "TextButton" else "Frame", keyProps, {
+				-- A darker lip under the key face matches the HUD's chunky buttons.
+				Lip = e("Frame", {
+					Position = UDim2.fromOffset(0, Theme.Lip),
+					Size = UDim2.new(1, 0, 1, -Theme.Lip),
+					BackgroundColor3 = if chosen then Theme.Outline else Theme.PaperShade,
+					BackgroundTransparency = fade,
+					BorderSizePixel = 0,
+					ZIndex = 1,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+					Outline = e("UIStroke", {
+						Color = Theme.Outline, Thickness = Theme.Border, Transparency = fade,
+						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+					}),
+				}),
+				Face = e("TextLabel", {
+					Size = UDim2.new(1, 0, 1, -Theme.Lip),
+					BackgroundColor3 = if chosen then style.color else Theme.Paper,
+					BackgroundTransparency = fade,
+					BorderSizePixel = 0,
+					Active = false,
+					FontFace = UIFonts.Display,
+					Text = if chosen then "✓" else tostring(props.index),
+					TextSize = 24,
+					TextColor3 = INK,
+					TextTransparency = fade,
+					ZIndex = 2,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.Radius) }),
+					Outline = e("UIStroke", {
+						Color = Theme.Outline, Thickness = Theme.Border, Transparency = fade,
+						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+					}),
 				}),
 			}),
 		}),

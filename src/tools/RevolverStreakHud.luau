@@ -92,14 +92,14 @@ local function StreakHud(props: Props)
 		AnchorPoint = Vector2.new(1, 0),
 		-- Temporary streak feedback keeps its own space at the upper right.
 		Position = UDim2.new(1, -20, 0, 72),
-		Size = UDim2.fromOffset(76, 60),
+		Size = UDim2.fromOffset(96, 72),
 		BackgroundTransparency = 1,
 	}, {
 		Scale = e("UIScale", { ref = scaleRef }),
 		Count = e("Frame", {
 			AnchorPoint = Vector2.new(0.5, 0),
 			Position = UDim2.fromScale(0.5, 0),
-			Size = UDim2.fromOffset(52, 38),
+			Size = UDim2.fromOffset(84, 46),
 			BackgroundTransparency = 1,
 		}, {
 			Label = e(HitCount, { count = streak.count }),

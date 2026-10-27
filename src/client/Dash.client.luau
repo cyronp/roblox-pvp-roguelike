@@ -8,6 +8,7 @@ local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("Dash") :: RemoteEvent
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DashConfig"))
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
+local UIFonts = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UIFonts"))
 local DashEffects = require(script.Parent.DashEffects)
 local effectsConnection = remote.OnClientEvent:Connect(DashEffects.play)
 local packages = ReplicatedStorage:WaitForChild("Packages")
@@ -48,26 +49,35 @@ ContextActionService:SetPosition(ACTION, UDim2.new(1, -160, 1, -160))
 
 local function styleTouchButton()
 	local button = ContextActionService:GetButton(ACTION)
-	if not button or button:FindFirstChild("CombatCorner") then return end
+	if not button or button:FindFirstChild("CartoonCorner") then return end
 	button.Image = ""
-	button.BackgroundColor3 = Theme.CombatSurface
-	button.BackgroundTransparency = 0.12
+	button.BackgroundColor3 = Theme.White
+	button.BackgroundTransparency = 0
 	button.BorderSizePixel = 0
-	button.Size = UDim2.fromOffset(64, 64)
+	button.Size = UDim2.fromOffset(68, 68)
 	local corner = Instance.new("UICorner")
-	corner.Name = "CombatCorner"
-	corner.CornerRadius = UDim.new(0, 8)
+	corner.Name = "CartoonCorner"
+	corner.CornerRadius = UDim.new(1, 0)
 	corner.Parent = button
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = Theme.CyanGradient
+	gradient.Rotation = 90
+	gradient.Parent = button
 	local outline = Instance.new("UIStroke")
-	outline.Color = Theme.CombatLine
-	outline.Thickness = 1
+	outline.Color = Theme.Outline
+	outline.Thickness = Theme.PanelBorder
+	outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	outline.Parent = button
 	for _, child in button:GetDescendants() do
 		if child:IsA("TextLabel") then
-			child.Font = Enum.Font.GothamMedium
-			child.TextColor3 = Theme.CombatText
+			child.FontFace = UIFonts.Display
+			child.TextColor3 = Theme.Text
 			child.TextStrokeTransparency = 1
-			child.TextSize = 14
+			child.TextSize = 17
+			local textOutline = Instance.new("UIStroke")
+			textOutline.Color = Theme.Outline
+			textOutline.Thickness = 2
+			textOutline.Parent = child
 		end
 	end
 end

@@ -189,7 +189,7 @@ local function DamageHud(props: Props)
 					AutomaticSize = Enum.AutomaticSize.X,
 					Size = UDim2.fromOffset(0, 64),
 					BackgroundTransparency = 1,
-					FontFace = UIFonts.ExtraBold,
+					FontFace = UIFonts.Display,
 					Text = string.format("%.0f", feedback.totalDamage),
 					TextSize = math.min(48 + (feedback.hitCount - 1), 56),
 					TextColor3 = Theme.Paper,

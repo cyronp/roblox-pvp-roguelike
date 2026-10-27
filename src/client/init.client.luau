@@ -7,7 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Theme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UITheme"))
 local player = Players.LocalPlayer
-local CROSSHAIR_COLOR = Theme.Paper
+local CROSSHAIR_COLOR = Theme.White
 local COOLDOWN_COLOR = Theme.Gold
 local COOLDOWN_DIAMETER = 44
 local COOLDOWN_RADIUS = COOLDOWN_DIAMETER / 2
@@ -15,17 +15,19 @@ local COOLDOWN_SEGMENT_COUNT = 48
 local CAMERA_OFFSET = Vector3.new(1.75, 1, 0)
 
 -- Disabling the backpack also disables its inventory and tool-switching controls.
+-- The custom vitals dock replaces Roblox's default health bar.
 -- Retry during startup in case Roblox's core UI is still initializing.
 task.spawn(function()
 	for attempt = 1, 5 do
 		local success, message = pcall(function()
 			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
 		end)
 		if success then
 			return
 		end
 		if attempt == 5 then
-			warn(`Failed to hide the inventory: {message}`)
+			warn(`Failed to hide the default inventory and health bar: {message}`)
 			return
 		end
 		task.wait(0.5)
@@ -61,8 +63,8 @@ local function addMark(name: string, x: number, y: number, width: number, height
 	mark.Parent = crosshair
 
 	local outline = Instance.new("UIStroke")
-	outline.Color = Theme.Ink
-	outline.Thickness = 1.25
+	outline.Color = Theme.Outline
+	outline.Thickness = 1.5
 	outline.Parent = mark
 end
 

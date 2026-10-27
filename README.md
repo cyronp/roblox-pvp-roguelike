@@ -36,28 +36,37 @@ For more help, check out [the Rojo documentation](https://rojo.space/docs).
 
 ## Cartoon HUD style
 
-`src/shared/UITheme.luau` defines the shared cream surfaces, navy outlines,
-rounded corners, bright accents, and bottom spacing. The HUD uses Nunito Bold
-and ExtraBold from `src/shared/UIFonts.luau`. Upgrade shells, level badges,
-input hints, progress meters, damage numbers, and streak colors use this palette.
+`src/shared/UITheme.luau` defines the chunky cartoon style shared by the whole
+HUD: navy gradient panels with a thick dark outline and a darker 4-pixel lip
+underneath, glossy outlined meters, light keycap hints, and bright accents that
+match the card art. Numbers and headings use Fredoka One with a dark text
+outline (`UIFonts.Display`); small hints use Nunito ExtraBold. The reusable
+panel, meter, outlined label, and keycap pieces live in `src/client/HudKit.luau`.
 
-Ammo and dash charges share a compact charcoal panel at the bottom right, above
-the XP dock. A static 3D preview of the equipped revolver sits left of the large
-ammo count, with a smaller capacity and reload label. The preview copies only
-weapon geometry and refreshes when equipment changes. Three neutral bars below
-show dash charges: filled bars dim during the one-second lockout, and the next
-empty bar fills over 3.5 seconds. The panel scales down on smaller screens and
-sits above the touch controls on mobile, which also use a charcoal DASH button.
+Ammo and dash charges share a navy panel at the bottom right. A static 3D
+preview of the equipped revolver sits left of the large ammo count, which turns
+red when the magazine is empty. Gold bullet pips below the count show loaded
+rounds; while reloading they are replaced by a gold RELOADING bar that fills
+over the weapon's `ReloadTime` (presentation only; the server still decides
+when ammo refills). The preview copies only weapon geometry and refreshes when
+equipment changes. Three cyan bars below show dash charges: filled bars dim
+during the one-second lockout, and the next empty bar fills over 3.5 seconds,
+next to a SHIFT keycap on desktop. The panel scales down on smaller screens and
+sits above the touch controls on mobile, which use a round cyan DASH button.
 The gold shooting cooldown stays at the crosshair; temporary hit streak feedback
 keeps its separate space at the upper right. Upgrade selection buttons remain
 at least 44 pixels tall and wide.
 
-The bottom dock combines a gold level badge and rounded blue XP meter, with
-space reserved above it for owned upgrade cards. Owned cards have colored level
-badges and a clear TOTAL BONUS caption. Offers use a cream heading with separate
-selection instructions. Sync and restart Play to see the changes; check desktop,
-portrait, and landscape mobile layouts in Studio, including an active offer,
-three owned cards, an empty magazine, and depleted dash charges.
+The bottom-center vitals dock combines a gold level badge (it pops on level up),
+a green health bar, and a thinner blue XP meter, with space reserved above it
+for owned upgrade cards. The health bar replaces Roblox's default health display,
+shows `current / max` health, turns red at 35% or less, and briefly leaves a
+pale trail showing damage just taken. Owned cards have colored, outlined level
+badges and a clear TOTAL BONUS caption. Offers use a navy panel with a gold
+heading and separate selection instructions, and number keycaps under each card.
+Sync and restart Play to see the changes; check desktop, portrait, and landscape
+mobile layouts in Studio, including an active offer, three owned cards, an empty
+magazine, a reload, low health, and depleted dash charges.
 
 ## Permanent cartoon lighting
 
@@ -129,8 +138,8 @@ confirmation. The same confirmation applies to player kills.
 
 ## XP and levels
 
-A rounded blue XP meter and a gold LVL badge share a dock along the bottom,
-inside device safe bounds. The XP count (such as `0 / 100 XP`) is centered inside
+A rounded blue XP meter and a gold LVL badge share the vitals dock at the bottom
+center, inside device safe bounds, with the health bar above the XP meter. The XP count (such as `0 / 100 XP`) is centered inside
 the meter. Players start at LVL 1 with 0 XP. Every server-confirmed kill
 (including training dummies) grants 25 XP to the player landing the final shot.
 The first level needs 100 XP; each subsequent level needs 50 more (150, 200,
@@ -223,7 +232,7 @@ missing charges recharge one at a time every 3.5 seconds. Spending another charg
 does not restart the recharge already in progress. Three spent charges therefore
 return at 3.5, 7, and 10.5 seconds after the first dash.
 
-Three neutral bars below ammo at the bottom right show available charges and
+Three cyan bars below ammo at the bottom right show available charges and
 recharge progress; filled bars dim during the one-second cooldown. The default burst lasts 0.25 seconds at 72 studs per second;
 speed and timing are configured in `src/shared/DashConfig.luau`. Horizontal
 movement uses Roblox's [LinearVelocity constraint](https://create.roblox.com/docs/reference/engine/classes/LinearVelocity),

@@ -43,14 +43,15 @@ return function(props: Props)
 				BackgroundColor3 = CardModel.Styles[card.id].color,
 				BorderSizePixel = 0,
 				Active = false,
-				FontFace = UIFonts.ExtraBold,
+				FontFace = UIFonts.Display,
 				Text = `LVL {props.levels[card.id]}`,
-				TextSize = 12,
-				TextColor3 = Theme.Ink,
+				TextSize = 14,
+				TextColor3 = Theme.Text,
 				ZIndex = 4,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, Theme.SmallRadius) }),
-				Stroke = e("UIStroke", { Color = Theme.Ink, Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+				Border = e("UIStroke", { Color = Theme.Outline, Thickness = 2.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+				TextOutline = e("UIStroke", { Color = Theme.Outline, Thickness = 1.5, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
 			}),
 		})
 	end

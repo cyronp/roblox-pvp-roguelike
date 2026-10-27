@@ -34,8 +34,8 @@ local function HitCount(props: Props)
 			if not ember:IsA("Frame") then
 				continue
 			end
-			local x = (index - 1) * 11 + 4
-			ember.Position = UDim2.fromOffset(x, 45)
+			local x = (index - 1) * 13 + 8
+			ember.Position = UDim2.fromOffset(x, 48)
 			ember.BackgroundTransparency = 0.15
 			local drift = if index % 2 == 0 then 7 else -7
 			local tween = TweenService:Create(
@@ -72,23 +72,23 @@ local function HitCount(props: Props)
 	end
 
 	return e("TextLabel", {
-		Size = UDim2.fromOffset(52, 38),
+		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
-		FontFace = UIFonts.ExtraBold,
+		FontFace = UIFonts.Display,
 		Text = `{props.count}x`,
-		TextSize = 24,
+		TextSize = 34,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextXAlignment = Enum.TextXAlignment.Center,
 		LayoutOrder = 2,
 		ZIndex = 2,
 	}, {
 		Gradient = e("UIGradient", { ref = gradientRef, Color = getGradient(props.count), Rotation = 90 }),
-		Stroke = e("UIStroke", { Color = Theme.Ink, Thickness = Theme.Border, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
+		Stroke = e("UIStroke", { Color = Theme.Outline, Thickness = 3, ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual }),
 		Fire = if onFire then e("Frame", {
 			ref = fireRef,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromOffset(55, 60),
+			Size = UDim2.fromOffset(70, 62),
 			BackgroundTransparency = 1,
 			ZIndex = 1,
 		}, embers) else nil,
