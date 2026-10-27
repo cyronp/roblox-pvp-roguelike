@@ -302,8 +302,10 @@ The script validates the layout before writing (overlapping cover, blocked
 spawns, and the training dummy positions); use `--check` to validate only.
 Do not edit the arena in Studio, because the next sync replaces it.
 
-The map is a symmetric free-for-all arena for 8–10 players: four color-coded
-spawn bays (Red, Blue, Green, Yellow) with three spawns each, a raised center
-platform, and a raised corner deck reached by a ramp beside each bay. Delete
-any default `Baseplate` or `SpawnLocation` in the open place, since the
-training dummies are placed in front of the first spawn found in Workspace.
+The map is a symmetric 260 × 260 stud free-for-all arena for 8–10 players: a
+raised center platform, cover in each lane, and a raised corner deck in every
+corner, reached by a ramp along the wall. There are no team bases; 20 invisible
+neutral spawns are spread across the floor, under and on the decks, and Roblox
+picks one at random each time a player spawns. Delete any default `Baseplate`
+or `SpawnLocation` in the open place, since the training dummies are placed in
+front of the first spawn found in Workspace.

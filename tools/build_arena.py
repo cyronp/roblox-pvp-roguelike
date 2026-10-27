@@ -1,8 +1,10 @@
 """Build the revolver arena as a Roblox XML model that Rojo syncs into Workspace.
 
-The layout is a TF2 "orange" style test map: flat orange floors, grey blocks,
-and four identical quarters rotated around the center so every spawn bay has the
-same routes. Run `python tools/build_arena.py`, then sync or rebuild the place.
+The layout is a TF2 "orange" style free-for-all test map: flat orange floors,
+grey blocks, and four identical quarters rotated around the center so no area
+is favored. Spawns are invisible SpawnLocations spread over the whole map;
+Roblox picks one at random for each neutral player.
+Run `python tools/build_arena.py`, then sync or rebuild the place.
 Pass `--check` to only validate the layout without writing the model.
 """
 
@@ -13,42 +15,35 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "assets/arena/Arena.rbxmx"
 
-HALF = 100  # Playable floor spans -HALF..HALF on X and Z.
+HALF = 130  # Playable floor spans -HALF..HALF on X and Z.
 WALL_HEIGHT = 32
 WALL_THICKNESS = 4
 TILE = 20
 DECK_HEIGHT = 12
+DECK_START = 78  # Corner decks cover DECK_START..HALF on both axes.
 SPAWN_FORCEFIELD_SECONDS = 2
 # Mirrors TrainingDummy.server.luau, which places dummies in front of the first spawn it finds.
 DUMMY_DISTANCE = 24
 DUMMY_SPACING = 10
 
 SMOOTH_PLASTIC = 272
-NEON = 288
 
 FLOOR_A = (232, 125, 45)
 FLOOR_B = (214, 110, 34)
 WALL = (196, 196, 200)
-BAY = (140, 142, 148)
 COVER = (116, 118, 125)
 PLATFORM = (212, 212, 216)
 POINT = (246, 241, 230)
 DECK = (240, 148, 66)
 RAMP = (247, 178, 90)
 
-# Bays are named by color so players can call them out without a theme.
-BAYS = [
-    ("Red", (222, 72, 66)),
-    ("Blue", (64, 132, 238)),
-    ("Green", (78, 184, 98)),
-    ("Yellow", (238, 196, 58)),
-]
+QUARTERS = ["A", "B", "C", "D"]
 
 IDENTITY = ((1, 0, 0), (0, 1, 0), (0, 0, 1))
-GROUPS = ["Spawns", "Floor", "Walls", "SpawnBays", "Center", "Cover", "Decks", "Ramps"]
+GROUPS = ["Spawns", "Floor", "Walls", "Center", "Cover", "Decks", "Ramps"]
 
 
-def part(group, name, center, size, color, *, rot=IDENTITY, axis_aligned=True, cls="Part", material=SMOOTH_PLASTIC, shape=None, solid=True, extra=None, children=None):
+def part(group, name, center, size, color, *, rot=IDENTITY, axis_aligned=True, cls="Part", material=SMOOTH_PLASTIC, shape=None, solid=True, extra=None):
     return {
         "group": group,
         "name": name,
@@ -62,7 +57,6 @@ def part(group, name, center, size, color, *, rot=IDENTITY, axis_aligned=True, c
         "shape": shape,
         "solid": solid,
         "extra": extra or [],
-        "children": children or [],
     }
 
 
@@ -109,57 +103,61 @@ def ramp(name, bottom, top, width, thickness=1, extend=1.5):
     return part("Ramps", name, center, (width, thickness, length), RAMP, rot=rot, axis_aligned=False)
 
 
-def quarter_parts(accent_name, accent):
-    """One quarter in local space: the +Z spawn bay, its arm, and the corner deck at +X +Z."""
+def spawn(name, x, y, z):
+    """An invisible SpawnLocation facing the arena center, standing on height `y`."""
+    back = normalize((x, 0, z))
+    right = (back[2], 0, -back[0])
+    rot = tuple((right[r], (0, 1, 0)[r], back[r]) for r in range(3))
+    return part("Spawns", name, (x, y + 0.5, z), (6, 1, 6), POINT, rot=rot, axis_aligned=False, cls="SpawnLocation", solid=False, extra=[
+        ("float", "Transparency", "1"),
+        ("bool", "CanCollide", "false"),
+        ("bool", "CanQuery", "false"),
+        ("bool", "CanTouch", "false"),
+        ("int", "Duration", str(SPAWN_FORCEFIELD_SECONDS)),
+        ("bool", "Neutral", "true"),
+        ("bool", "AllowTeamChangeOnTouch", "false"),
+        ("bool", "Enabled", "true"),
+    ])
+
+
+def quarter_parts(q):
+    """One quarter in local space: the +Z lane, the corner deck at +X +Z, and their spawns."""
     parts = []
     add = parts.append
 
-    # Spawns go first so TrainingDummy, which takes the first SpawnLocation, uses the middle one.
-    for index, x in enumerate((0, -10, 10)):
-        add(part("Spawns", f"{accent_name}Spawn{index + 1}", (x, 0.2, 110), (6, 0.4, 6), accent, axis_aligned=False, cls="SpawnLocation", solid=False, extra=[
-            ("int", "Duration", str(SPAWN_FORCEFIELD_SECONDS)),
-            ("bool", "Neutral", "true"),
-            ("bool", "AllowTeamChangeOnTouch", "false"),
-            ("bool", "Enabled", "true"),
-            ("bool", "CanCollide", "true"),
-        ]))
+    # Spawns go first so TrainingDummy, which takes the first SpawnLocation, uses the lane spawn.
+    add(spawn(f"{q}SpawnLane", 0, 0, 118))
+    add(spawn(f"{q}SpawnCourtyard", -28, 0, 56))
+    add(spawn(f"{q}SpawnRamp", 40, 0, 102))
+    add(spawn(f"{q}SpawnUnderDeck", 118, 0, 90))
+    add(spawn(f"{q}SpawnDeck", 92, DECK_HEIGHT, 118))
 
     edge = HALF + WALL_THICKNESS
-    bay = f"{accent_name}Bay"
-    add(box("Walls", f"{accent_name}PerimeterLeft", (-HALF, -4, HALF), (-20, WALL_HEIGHT, edge), WALL))
-    add(box("Walls", f"{accent_name}PerimeterRight", (20, -4, HALF), (edge, WALL_HEIGHT, edge), WALL))
-    add(box("Walls", f"{bay}Lintel", (-20, 12, HALF), (20, WALL_HEIGHT, edge), WALL))
+    add(box("Walls", f"{q}Perimeter", (-HALF, -4, HALF), (edge, WALL_HEIGHT, edge), WALL))
 
-    add(box("SpawnBays", f"{bay}Floor", (-24, -4, 104), (24, 0, 122), BAY))
-    add(box("SpawnBays", f"{bay}WallLeft", (-24, -4, 104), (-20, 14, 118), BAY))
-    add(box("SpawnBays", f"{bay}WallRight", (20, -4, 104), (24, 14, 118), BAY))
-    add(box("SpawnBays", f"{bay}WallBack", (-24, -4, 118), (24, 14, 122), BAY))
-    add(box("SpawnBays", f"{bay}Roof", (-24, 12, 104), (24, 14, 118), BAY))
-    light = ("PointLight", [("float", "Range", "28"), ("float", "Brightness", "1.2"), ("Color3", "Color", accent), ("bool", "Shadows", "false")])
-    add(box("SpawnBays", f"{bay}Light", (-14, 9.7, 117.6), (14, 10.3, 118), accent, material=NEON, solid=False, children=[light]))
-    # The shield hides the bay from the center platform so players are not shot while spawning.
-    add(box("SpawnBays", f"{bay}Shield", (-14, 0, 91), (14, 10, 93), accent))
+    add(ramp(f"{q}CenterRamp", (0, 0, 30), (0, 4, 16), 10))
+    add(box("Center", f"{q}PlatformCover", (9, 4, 9), (13, 7, 13), COVER))
+    add(box("Cover", f"{q}CourtyardPillar", (40, 0, 40), (46, 16, 46), COVER))
 
-    add(ramp(f"{accent_name}CenterRamp", (0, 0, 27), (0, 4, 14), 10))
-    add(box("Center", f"{accent_name}PlatformCover", (8, 4, 8), (12, 7, 12), COVER))
-    add(box("Cover", f"{accent_name}CourtyardPillar", (31, 0, 31), (37, 16, 37), COVER))
+    add(box("Cover", f"{q}LowWall", (-14, 0, 78), (14, 3.5, 80), COVER))
+    add(box("Cover", f"{q}BlockNear", (20, 0, 56), (28, 8, 64), COVER))
+    add(box("Cover", f"{q}BlockFar", (-50, 0, 82), (-40, 8, 88), COVER))
+    add(box("Cover", f"{q}CrateBig", (-62, 0, 60), (-56, 6, 66), COVER))
+    add(box("Cover", f"{q}CrateStep", (-61, 0, 56), (-57, 3, 60), COVER))
+    # The screen shields the lane spawn from the center platform.
+    add(box("Cover", f"{q}LaneScreen", (-8, 0, 104), (16, 8, 106), COVER))
+    add(box("Cover", f"{q}WallCrate", (-34, 0, 112), (-28, 4, 118), COVER))
 
-    add(box("Cover", f"{accent_name}LowWall", (-12, 0, 61), (12, 3.5, 63), COVER))
-    add(box("Cover", f"{accent_name}BlockNear", (16, 0, 44), (24, 8, 52), COVER))
-    add(box("Cover", f"{accent_name}BlockFar", (-39, 0, 63), (-29, 8, 69), COVER))
-    add(box("Cover", f"{accent_name}CrateBig", (-49, 0, 47), (-43, 6, 53), COVER))
-    add(box("Cover", f"{accent_name}CrateStep", (-48, 0, 43), (-44, 3, 47), COVER))
-
-    deck = f"{accent_name}Deck"
-    add(box("Decks", f"{deck}Floor", (60, DECK_HEIGHT - 2, 60), (HALF, DECK_HEIGHT, HALF), DECK))
-    # The corner column also blocks the long diagonal between neighboring spawn exits.
-    add(box("Cover", f"{deck}Column", (54, 0, 54), (62, DECK_HEIGHT + 4, 62), COVER))
-    add(box("Cover", f"{deck}SupportRamp", (61, 0, 90), (65, DECK_HEIGHT - 2, 94), COVER))
-    add(box("Cover", f"{deck}SupportSide", (90, 0, 60), (94, DECK_HEIGHT - 2, 64), COVER))
-    add(box("Cover", f"{deck}RailRamp", (60, DECK_HEIGHT, 62), (61, DECK_HEIGHT + 3.5, 88), COVER))
-    add(box("Cover", f"{deck}RailSide", (62, DECK_HEIGHT, 60), (HALF, DECK_HEIGHT + 3.5, 61), COVER))
-    add(box("Cover", f"{deck}Crate", (83, DECK_HEIGHT, 75), (89, DECK_HEIGHT + 6, 81), COVER))
-    add(ramp(f"{deck}Ramp", (36, 0, 94), (60, DECK_HEIGHT, 94), 12))
+    deck = f"{q}Deck"
+    add(box("Decks", f"{deck}Floor", (DECK_START, DECK_HEIGHT - 2, DECK_START), (HALF, DECK_HEIGHT, HALF), DECK))
+    # The corner column also blocks the long diagonal between neighboring lanes.
+    add(box("Cover", f"{deck}Column", (DECK_START - 6, 0, DECK_START - 6), (DECK_START + 2, DECK_HEIGHT + 4, DECK_START + 2), COVER))
+    add(box("Cover", f"{deck}SupportRamp", (79, 0, 112), (83, DECK_HEIGHT - 2, 116), COVER))
+    add(box("Cover", f"{deck}SupportSide", (112, 0, 79), (116, DECK_HEIGHT - 2, 83), COVER))
+    add(box("Cover", f"{deck}RailRamp", (DECK_START, DECK_HEIGHT, 80), (DECK_START + 1, DECK_HEIGHT + 3.5, 118), COVER))
+    add(box("Cover", f"{deck}RailSide", (80, DECK_HEIGHT, DECK_START), (HALF, DECK_HEIGHT + 3.5, DECK_START + 1), COVER))
+    add(box("Cover", f"{deck}Crate", (104, DECK_HEIGHT, 96), (110, DECK_HEIGHT + 6, 102), COVER))
+    add(ramp(f"{deck}Ramp", (48, 0, 124), (DECK_START, DECK_HEIGHT, 124), 12))
     return parts
 
 
@@ -183,12 +181,12 @@ def build_parts():
             color = FLOOR_A if ((i + j) // TILE) % 2 == 0 else FLOOR_B
             parts.append(box("Floor", "Tile", (i, -4, j), (i + TILE, 0, j + TILE), color))
 
-    parts.append(box("Center", "Platform", (-14, 0, -14), (14, 4, 14), PLATFORM))
+    parts.append(box("Center", "Platform", (-16, 0, -16), (16, 4, 16), PLATFORM))
     disc_rot = ((0, -1, 0), (1, 0, 0), (0, 0, 1))  # Cylinder axis points up.
-    parts.append(part("Center", "Point", (0, 4.1, 0), (0.2, 14, 14), POINT, rot=disc_rot, axis_aligned=False, shape=2, solid=False))
+    parts.append(part("Center", "Point", (0, 4.1, 0), (0.2, 16, 16), POINT, rot=disc_rot, axis_aligned=False, shape=2, solid=False))
 
-    for quarter, (name, accent) in enumerate(BAYS):
-        parts.extend(rotate(p, quarter) for p in quarter_parts(name, accent))
+    for quarter, name in enumerate(QUARTERS):
+        parts.extend(rotate(p, quarter) for p in quarter_parts(name))
     return parts
 
 
@@ -224,24 +222,30 @@ def validate(parts):
                 errors.append(f"{ramp_name} overlaps {name}")
 
     spawns = [p for p in parts if p["class"] == "SpawnLocation"]
-    if len(spawns) < 10:
+    # Random spawning needs enough points that 8-10 players rarely share or crowd one.
+    if len(spawns) < 16:
         errors.append(f"only {len(spawns)} spawns for 8-10 players")
-    for spawn in spawns:
-        look = apply(spawn["rot"], (0, 0, -1))
-        right = (-look[2], 0, look[0])
-        sx, _, sz = spawn["center"]
-        standing = ((sx - 2, 0.5, sz - 2), (sx + 2, 5.5, sz + 2))
-        for name, b in solids:
+    for i, spawn in enumerate(spawns):
+        sx, sy, sz = spawn["center"]
+        base = sy - spawn["size"][1] / 2
+        standing = ((sx - 2, base + 0.5, sz - 2), (sx + 2, base + 5.5, sz + 2))
+        for name, b in solids + ramps:
             if overlaps(standing, b):
                 errors.append(f"{spawn['name']} is blocked by {name}")
-        if spawn["name"].endswith("Spawn1"):
-            for offset in (0, -DUMMY_SPACING, DUMMY_SPACING):
-                x = sx + look[0] * DUMMY_DISTANCE + right[0] * offset
-                z = sz + look[2] * DUMMY_DISTANCE + right[2] * offset
-                dummy = ((x - 2.5, 0.5, z - 2.5), (x + 2.5, 64, z + 2.5))
-                for name, b in solids + ramps:
-                    if overlaps(dummy, b):
-                        errors.append(f"training dummy in front of {spawn['name']} is blocked by {name}")
+        for other in spawns[i + 1:]:
+            if math.dist(spawn["center"], other["center"]) < 30:
+                errors.append(f"{spawn['name']} is too close to {other['name']}")
+
+    first = spawns[0]
+    look = apply(first["rot"], (0, 0, -1))
+    right = (-look[2], 0, look[0])
+    for offset in (0, -DUMMY_SPACING, DUMMY_SPACING):
+        x = first["center"][0] + look[0] * DUMMY_DISTANCE + right[0] * offset
+        z = first["center"][2] + look[2] * DUMMY_DISTANCE + right[2] * offset
+        dummy = ((x - 2.5, 0.5, z - 2.5), (x + 2.5, 64, z + 2.5))
+        for name, b in solids + ramps:
+            if overlaps(dummy, b):
+                errors.append(f"training dummy in front of {first['name']} is blocked by {name}")
     return errors
 
 
@@ -267,12 +271,7 @@ class Writer:
         self.lines.append(f"{pad}\t<Properties>")
 
     def prop(self, kind, name, value, depth):
-        pad = "\t" * (depth + 2)
-        if kind == "Color3":
-            r, g, b = (number(c / 255) for c in value)
-            self.lines.append(f'{pad}<Color3 name="{name}"><R>{r}</R><G>{g}</G><B>{b}</B></Color3>')
-        else:
-            self.lines.append(f'{pad}<{kind} name="{name}">{value}</{kind}>')
+        self.lines.append("\t" * (depth + 2) + f'<{kind} name="{name}">{value}</{kind}>')
 
     def end_props(self, depth):
         self.lines.append("\t" * depth + "\t</Properties>")
@@ -299,18 +298,9 @@ class Writer:
             self.prop("bool", "CanCollide", "false", depth)
             self.prop("bool", "CanQuery", "false", depth)
             self.prop("bool", "CanTouch", "false", depth)
-        if p["material"] == NEON:
-            self.prop("bool", "CastShadow", "false", depth)
         for kind, name, value in p["extra"]:
             self.prop(kind, name, value, depth)
         self.end_props(depth)
-        for cls, props in p["children"]:
-            self.open(cls, depth + 1)
-            self.prop("string", "Name", cls, depth + 1)
-            for kind, name, value in props:
-                self.prop(kind, name, value, depth + 1)
-            self.end_props(depth + 1)
-            self.close(depth + 1)
         self.close(depth)
 
     def write_folder(self, name, parts, depth):
