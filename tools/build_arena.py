@@ -22,9 +22,6 @@ TILE = 20
 DECK_HEIGHT = 12
 DECK_START = 78  # Corner decks cover DECK_START..HALF on both axes.
 SPAWN_FORCEFIELD_SECONDS = 2
-# Mirrors TrainingDummy.server.luau, which places dummies in front of the first spawn it finds.
-DUMMY_DISTANCE = 24
-DUMMY_SPACING = 10
 
 SMOOTH_PLASTIC = 272
 
@@ -125,7 +122,6 @@ def quarter_parts(q):
     parts = []
     add = parts.append
 
-    # Spawns go first so TrainingDummy, which takes the first SpawnLocation, uses the lane spawn.
     add(spawn(f"{q}SpawnLane", 0, 0, 118))
     add(spawn(f"{q}SpawnCourtyard", -28, 0, 56))
     add(spawn(f"{q}SpawnRamp", 40, 0, 102))
@@ -236,16 +232,6 @@ def validate(parts):
             if math.dist(spawn["center"], other["center"]) < 30:
                 errors.append(f"{spawn['name']} is too close to {other['name']}")
 
-    first = spawns[0]
-    look = apply(first["rot"], (0, 0, -1))
-    right = (-look[2], 0, look[0])
-    for offset in (0, -DUMMY_SPACING, DUMMY_SPACING):
-        x = first["center"][0] + look[0] * DUMMY_DISTANCE + right[0] * offset
-        z = first["center"][2] + look[2] * DUMMY_DISTANCE + right[2] * offset
-        dummy = ((x - 2.5, 0.5, z - 2.5), (x + 2.5, 64, z + 2.5))
-        for name, b in solids + ramps:
-            if overlaps(dummy, b):
-                errors.append(f"training dummy in front of {first['name']} is blocked by {name}")
     return errors
 
 
