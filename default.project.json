@@ -105,6 +105,9 @@
       "KillFeed": {
         "$className": "RemoteEvent"
       },
+      "Deploy": {
+        "$className": "RemoteEvent"
+      },
       "MatchState": {
         "$className": "Folder"
       }
@@ -201,6 +204,11 @@
         "StreakColors": {
           "$path": "src/tools/RevolverStreakColors.luau"
         }
+      }
+    },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": false
       }
     },
     "StarterPlayer": {

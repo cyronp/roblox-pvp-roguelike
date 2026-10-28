@@ -38,6 +38,15 @@ do
 	end
 end
 
+-- Replicates lifetime stats (e.g. "LifetimeWins") for the main menu, then notifies server listeners.
+local function notify(player: Player, session: Session)
+	local stats = Schema.add(session.stored, session.pending)
+	for _, field in Schema.FIELDS do
+		player:SetAttribute(`Lifetime{field}`, stats[field])
+	end
+	changedEvent:Fire(player)
+end
+
 local function keyFor(userId: number): string
 	return `player_{userId}`
 end
@@ -70,7 +79,7 @@ local function load(player: Player, session: Session)
 	end
 	if success then
 		session.stored = Schema.reconcile(raw)
-		changedEvent:Fire(player)
+		notify(player, session)
 	elseif RunService:IsStudio() then
 		-- Usually "Enable Studio Access to API Services" is off; stop retrying every save.
 		store = nil
@@ -117,7 +126,7 @@ function PlayerData.Increment(player: Player, field: Schema.Field, amount: numbe
 		return
 	end
 	session.pending[field] += amount or 1
-	changedEvent:Fire(player)
+	notify(player, session)
 end
 
 local function onPlayerAdded(player: Player)
@@ -126,6 +135,7 @@ local function onPlayerAdded(player: Player)
 	end
 	local session: Session = { stored = Schema.empty(), pending = Schema.empty() }
 	sessions[player] = session
+	notify(player, session)
 	load(player, session)
 end
 

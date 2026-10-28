@@ -113,7 +113,7 @@ or rebuild `Test.rbxlx` and reopen it.
 The server plays the sound after accepting a shot. Each revolver reuses its own
 sound, with volume 0.65 and distance attenuation from 12 to 180 studs.
 
-## Kill confirmation and training dummy
+## Kill confirmation
 
 Original level-up, dash, and upgrade-selection WAVs and their playback hooks are
 also included, with uploaded SoundIds configured; see
@@ -124,24 +124,16 @@ to this audio too. The server notifies only the shooter when their revolver hit
 reduces a living target to zero health. Nonlethal hits, protected targets, and
 shots at dead targets do not trigger the confirmation.
 
-On Play, three stationary **Training Dummies** appear 24 studs in front of the
-first SpawnLocation, facing it. The original stays in the center, with two
-more 10 studs to either side. With no SpawnLocation, the center dummy appears
-near `(0, 3, -24)`; each dummy's height is adjusted to its own ground position.
-Each has 100 health, takes three revolver hits to kill, and respawns independently
-after three seconds.
-
-To verify in Studio, restart Rojo and Play, shoot the dummy three times, and
-check that only the last hit plays the kill sound. Repeat after it respawns.
-With two players, check that only the player landing the final shot hears the
-confirmation. The same confirmation applies to player kills.
+To verify in Studio, restart Rojo and use Start Server with two players. Shoot
+the other player three times and check that only the last hit plays the kill
+sound, and that only the player landing the final shot hears it.
 
 ## XP and levels
 
 A rounded blue XP meter and a gold LVL badge share the vitals dock at the bottom
 center, inside device safe bounds, with the health bar above the XP meter. The XP count (such as `0 / 100 XP`) is centered inside
 the meter. Players start at LVL 1 with 0 XP. Every server-confirmed kill
-(including training dummies) grants 25 XP to the player landing the final shot.
+grants 25 XP to the player landing the final shot.
 The first level needs 100 XP; each subsequent level needs 50 more (150, 200,
 250, and so on). Extra XP carries into the next level. Death immediately resets
 the level to 1 and XP to 0; respawning and reconnecting also start a fresh life.
@@ -149,8 +141,8 @@ the level to 1 and XP to 0; respawning and reconnecting also start a fresh life.
 Balance values live in `src/shared/ExperienceConfig.luau`. XP is awarded and
 tracked on the server; the client only displays replicated progress.
 
-To verify in Studio, kill four dummies to reach LVL 2, then kill six more to
-reach LVL 3. Reset your character and check for LVL 1 and an empty bar. With
+To verify in Studio, use Start Server with two players: get four kills to reach
+LVL 2, then six more to reach LVL 3. Reset your character and check for LVL 1 and an empty bar. With
 two players, confirm that only the final shooter receives XP, dead targets and
 nonlethal hits grant none, and one player's death does not reset the other.
 Check the bottom bar and label with desktop and mobile device emulation.
@@ -204,7 +196,7 @@ the client submits only the offered card ID and its offer token. Old offers,
 invalid IDs, rapid requests, and selections after death cannot grant upgrades.
 
 Restart `rojo serve` to sync the remote and card asset mapping, then restart Play.
-Kill four dummies for the first offer, select a card, and check its actual effect
+Get four kills for the first offer, select a card, and check its actual effect
 and HUD. Continue until three cards are owned, then verify only those cards
 appear and stop at level five. Check a level-up on the last magazine round,
 a health pick while injured, and death while an offer is open. Use Start Server
@@ -283,9 +275,8 @@ one second to aim before the streak expires. Every confirmed damaging hit increm
 streak, including hits on different enemies. Misses and protected targets
 do not increment it and leave the existing countdown running. Enemy death,
 respawn, and target switching preserve the streak until its
-existing deadline. Training dummies retain a server-assigned `DamageStreakId`
-across replacement models, and enemy players use their Player identity.
-Other respawning NPCs can opt in by keeping a unique `DamageStreakId` attribute.
+existing deadline. Enemy players use their Player identity; respawning NPCs
+can opt in by keeping a unique `DamageStreakId` attribute across replacement models.
 Timer expiry or shooter death/respawn resets the streak. Damage totals remain
 specific to each target and expire independently. Reloading preserves a streak
 only if the next hit lands before its deadline. The final hit's total stays
@@ -293,18 +284,16 @@ visible briefly; overkill is excluded from the displayed damage. All damage,
 streak, and expiration calculations run on the server. Tuning values are in
 `src/shared/DamageStreakConfig.luau`.
 
-Restart Rojo to sync the HUD modules, then restart Play. Hit the training
-dummy three times: the feedback should show
-`35 / 1x`, `70 / 2x`, then `100 / 3x` with one kill confirmation. The damage
-appears at the dummy's upper right and the count at the screen's upper right. Shoot another
-dummy before the deadline to see `35` above that dummy and a `4x` streak.
-In a separate run, shoot the same dummy promptly after it respawns to continue
-at `135 / 4x`; verify that each
-dummy respawns in its own position without affecting the others. Miss between
+Restart Rojo to sync the HUD modules, then use Start Server with three players.
+Hit one enemy three times: the feedback should show `35 / 1x`, `70 / 2x`, then
+`100 / 3x` with one kill confirmation. The damage appears at the enemy's upper
+right and the count at the screen's upper right. Shoot the other enemy before the
+deadline to see `35` above them and a `4x` streak. In a separate run, shoot the
+same enemy promptly after they respawn to continue at `135 / 4x`. Miss between
 hits and verify that the countdown continues without incrementing. Wait for
-expiry to check the reset. Alternate between the three dummies to inspect every
-color tier and the fire effect. With two players, verify that counters are independent
-and only the shooter sees their feedback.
+expiry to check the reset. Alternate between enemies to inspect every color tier
+and the fire effect. Verify that counters are independent and only the shooter
+sees their feedback.
 Move the target and camera to verify that the popup stays at the enemy's upper right.
 Check target removal, death/respawn, and a small mobile viewport too.
 Continue shooting through the reloads at 6x and 12x to verify the streak can
@@ -319,8 +308,8 @@ reach 13x and beyond, then wait out the countdown to verify it still resets.
 python tools/build_arena.py
 ```
 
-The script validates the layout before writing (overlapping cover, blocked
-spawns, and the training dummy positions); use `--check` to validate only.
+The script validates the layout before writing (overlapping cover and blocked
+or crowded spawns); use `--check` to validate only.
 Do not edit the arena in Studio, because the next sync replaces it.
 
 The map is a symmetric 260 × 260 stud free-for-all arena for 8–10 players: a
@@ -328,14 +317,13 @@ raised center platform, cover in each lane, and a raised corner deck in every
 corner, reached by a ramp along the wall. There are no team bases; 20 invisible
 neutral spawns are spread across the floor, under and on the decks, and Roblox
 picks one at random each time a player spawns. Delete any default `Baseplate`
-or `SpawnLocation` in the open place, since the training dummies are placed in
-front of the first spawn found in Workspace.
+or `SpawnLocation` in the open place so players only spawn inside the arena.
 
 ## Rounds and scoreboard
 
 The server runs free-for-all rounds. With fewer than two players it stays in
-**warmup**: everyone can fight and use the training dummies, but nothing is
-scored. Once two players are in, a 15-second intermission counts down, then
+**warmup**: everyone can fight, but nothing is scored. Players still in the
+main menu do not count. Once two players have pressed PLAY, a 15-second intermission counts down, then
 everyone respawns at full health, level 1, and no upgrades. A round lasts five
 minutes or ends as soon as a player reaches 20 kills. The player with the most
 kills wins; a tie goes to whoever reached that total first, and nobody wins
@@ -345,10 +333,8 @@ Rules live in `src/shared/MatchConfig.luau`; the scoring rules are in
 `src/server/MatchRules.luau`.
 
 The Roblox player list shows each player's **Kills** and **Deaths** for the
-current round and their lifetime **Wins**. Only player kills count; training
-dummies still give XP but no score. A kill is credited to whoever landed the
-lethal revolver hit, and only during an active round. Players respawn 3 seconds
-after dying.
+current round and their lifetime **Wins**. A kill is credited to whoever landed the
+lethal revolver hit, and only during an active round.
 
 A navy panel at the top center shows the phase and its countdown, with the
 current leader underneath during a round. Below it, a kill feed lists the last
@@ -365,6 +351,26 @@ Studio, use Start Server with two or three players: check warmup with one
 player, the intermission countdown, kills and deaths in the player list, the
 kill feed and death screen, reaching 20 kills (lower `KILL_TARGET` to test
 quickly), the time-up winner, a tie, and a player leaving mid-round.
+
+## Main menu
+
+Players join into a main menu instead of spawning straight away: the game title,
+the round rules, a large **PLAY** button, their saved Wins, Kills, Deaths, and
+K/D, and a controls hint for desktop or touch. The camera slowly circles the
+arena behind it. Gamepad players start with PLAY selected.
+
+`Players.CharacterAutoLoads` is off (in `default.project.json` and again by the
+server). PLAY fires the argument-free `Deploy` remote; the server ignores repeats
+within a second and players who are already deployed, then spawns the player and
+sets their `Deployed` attribute, which closes the menu. From then on
+`src/server/Spawning.luau` respawns them 3 seconds after each death and at round
+start. If the server does not respond within 5 seconds, PLAY becomes available
+again. Lifetime stats reach the menu through `Lifetime<Field>` player attributes.
+The title is `GAME_TITLE` in `src/client/MainMenu.client.luau`.
+
+In Studio, check the menu on desktop, phone, and gamepad emulation; press PLAY
+repeatedly; die and respawn; and use Start Server with two players where one
+stays in the menu, which should keep the server in warmup.
 
 ## Saved stats
 

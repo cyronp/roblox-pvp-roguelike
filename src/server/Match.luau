@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MatchConfig"))
 local MatchRules = require(script.Parent:WaitForChild("MatchRules"))
 local PlayerData = require(script.Parent:WaitForChild("PlayerData"))
+local Spawning = require(script.Parent:WaitForChild("Spawning"))
 
 local killFeedRemote = ReplicatedStorage:WaitForChild("KillFeed") :: RemoteEvent
 -- Clients read the round state from these replicated attributes; no remote is needed.
@@ -38,16 +39,9 @@ local function setState(nextState: State, duration: number?)
 	matchState:SetAttribute("State", nextState)
 end
 
-local function countPlayers(): number
-	local count = 0
-	for _ in entries do
-		count += 1
-	end
-	return count
-end
-
+-- Players still in the main menu do not hold a round open or start one.
 local function enoughPlayers(): boolean
-	return countPlayers() >= Config.MIN_PLAYERS
+	return Spawning.CountDeployed() >= Config.MIN_PLAYERS
 end
 
 local function collectScores(): { [Player]: MatchRules.Score }
@@ -170,9 +164,14 @@ local function onPlayerRemoving(player: Player)
 	end
 	if state == "Active" then
 		publishLeader()
-		if not enoughPlayers() then
-			endRound("NotEnoughPlayers")
-		end
+	end
+	playersChanged:Fire()
+end
+
+local function onDeploymentChanged()
+	matchState:SetAttribute("DeployedPlayers", Spawning.CountDeployed())
+	if state == "Active" and not enoughPlayers() then
+		endRound("NotEnoughPlayers")
 	end
 	playersChanged:Fire()
 end
@@ -193,11 +192,7 @@ local function startRound()
 
 	-- Respawning resets health, level, and upgrades, so everyone starts the round even.
 	for _, player in Players:GetPlayers() do
-		task.spawn(function()
-			if player.Parent == Players then
-				player:LoadCharacter()
-			end
-		end)
+		task.spawn(Spawning.Respawn, player)
 	end
 end
 
@@ -219,7 +214,9 @@ local function finishRound(reason: EndReason)
 	local winner = if reason == "NotEnoughPlayers" then nil else MatchRules.pickWinner(collectScores())
 	local winnerEntry = if winner then entries[winner] else nil
 	for player in entries do
-		PlayerData.Increment(player, "MatchesPlayed")
+		if Spawning.IsDeployed(player) then
+			PlayerData.Increment(player, "MatchesPlayed")
+		end
 	end
 	if winner and winnerEntry then
 		PlayerData.Increment(winner, "Wins")
@@ -261,8 +258,9 @@ function Match.Start()
 		return
 	end
 	started = true
-	Players.RespawnTime = Config.RESPAWN_TIME
 
+	Spawning.Changed:Connect(onDeploymentChanged)
+	matchState:SetAttribute("DeployedPlayers", Spawning.CountDeployed())
 	PlayerData.Changed:Connect(function(player: Player)
 		local entry = entries[player]
 		if entry then

@@ -13,10 +13,12 @@ local Experience = require(script:WaitForChild("Experience"))
 local Upgrades = require(script:WaitForChild("Upgrades"))
 local RevolverModel = require(script:WaitForChild("RevolverModel"))
 local PlayerData = require(script:WaitForChild("PlayerData"))
+local Spawning = require(script:WaitForChild("Spawning"))
 local Match = require(script:WaitForChild("Match"))
 local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
 
 PlayerData.Start()
+Spawning.Start()
 Match.Start()
 
 local RANGE = 300
@@ -230,7 +232,11 @@ local function onPlayerAdded(player: Player)
 	if player.Character then
 		onCharacterAdded(player.Character)
 	end
-	watchTools(player, player:WaitForChild("Backpack"))
+	-- Players wait in the main menu without a character, so this can take a while.
+	local backpack = player:WaitForChild("Backpack", math.huge)
+	if backpack and player.Parent == Players then
+		watchTools(player, backpack)
+	end
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

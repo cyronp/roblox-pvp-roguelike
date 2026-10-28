@@ -1,4 +1,3 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
@@ -23,6 +22,8 @@ type MatchInfo = {
 	winnerName: string?,
 	winnerKills: number?,
 	endReason: string?,
+	-- Players who have left the main menu; only they count toward starting a round.
+	deployedPlayers: number,
 }
 
 local function readString(name: string): string?
@@ -44,6 +45,7 @@ local function readMatch(): MatchInfo
 		winnerName = readString("WinnerName"),
 		winnerKills = readNumber("WinnerKills"),
 		endReason = readString("EndReason"),
+		deployedPlayers = readNumber("DeployedPlayers") or 0,
 	}
 end
 
@@ -74,26 +76,6 @@ local function useMatchInfo(): MatchInfo
 		end
 	end, {})
 	return info
-end
-
-local function usePlayerCount(): number
-	local count, setCount = React.useState(#Players:GetPlayers())
-	React.useEffect(function()
-		local function update()
-			-- PlayerRemoving fires before the player leaves the list.
-			task.defer(function()
-				setCount(#Players:GetPlayers())
-			end)
-		end
-		local added = Players.PlayerAdded:Connect(update)
-		local removing = Players.PlayerRemoving:Connect(update)
-		update()
-		return function()
-			added:Disconnect()
-			removing:Disconnect()
-		end
-	end, {})
-	return count
 end
 
 local function ResultsBanner(props: { winnerName: string?, winnerKills: number?, endReason: string? })
@@ -162,7 +144,6 @@ end
 -- Top-center round status, plus the winner banner while results are shown.
 return function()
 	local info = useMatchInfo()
-	local playerCount = usePlayerCount()
 	local remaining = useServerCountdown(info.endsAt)
 
 	local caption: string
@@ -177,14 +158,14 @@ return function()
 	elseif info.state == "Intermission" then
 		caption = "NEXT ROUND IN"
 		value = formatClock(remaining)
-		footer = "Warm up on the dummies"
+		footer = "Get ready!"
 	elseif info.state == "Results" then
 		caption = "NEXT ROUND SOON"
 		value = formatClock(remaining)
 	else
 		caption = "WAITING FOR PLAYERS"
-		value = `{math.min(playerCount, Config.MIN_PLAYERS)} / {Config.MIN_PLAYERS}`
-		footer = "Warm up on the dummies"
+		value = `{math.min(info.deployedPlayers, Config.MIN_PLAYERS)} / {Config.MIN_PLAYERS}`
+		footer = "Warmup: kills don't count yet"
 	end
 
 	return e("Frame", {
