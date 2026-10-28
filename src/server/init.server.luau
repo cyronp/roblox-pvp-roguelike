@@ -368,6 +368,12 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 	state.ammo -= 1
 	tool:SetAttribute("Ammo", state.ammo)
 
+	-- Spawn protection ends on the first shot so protected players cannot fight back for free.
+	local forceField = character:FindFirstChildOfClass("ForceField")
+	if forceField then
+		forceField:Destroy()
+	end
+
 	-- Play only accepted shots; the handle makes the sound positional for nearby players.
 	local fireSound = toolHandle:FindFirstChild("FireSound")
 	if fireSound and fireSound:IsA("Sound") and fireSound.SoundId ~= "" then
