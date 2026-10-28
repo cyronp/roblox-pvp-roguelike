@@ -330,3 +330,67 @@ neutral spawns are spread across the floor, under and on the decks, and Roblox
 picks one at random each time a player spawns. Delete any default `Baseplate`
 or `SpawnLocation` in the open place, since the training dummies are placed in
 front of the first spawn found in Workspace.
+
+## Rounds and scoreboard
+
+The server runs free-for-all rounds. With fewer than two players it stays in
+**warmup**: everyone can fight and use the training dummies, but nothing is
+scored. Once two players are in, a 15-second intermission counts down, then
+everyone respawns at full health, level 1, and no upgrades. A round lasts five
+minutes or ends as soon as a player reaches 20 kills. The player with the most
+kills wins; a tie goes to whoever reached that total first, and nobody wins
+without a kill. The winner is shown for 8 seconds before the next intermission.
+If players leave and fewer than two remain, the round ends without a winner.
+Rules live in `src/shared/MatchConfig.luau`; the scoring rules are in
+`src/server/MatchRules.luau`.
+
+The Roblox player list shows each player's **Kills** and **Deaths** for the
+current round and their lifetime **Wins**. Only player kills count; training
+dummies still give XP but no score. A kill is credited to whoever landed the
+lethal revolver hit, and only during an active round. Players respawn 3 seconds
+after dying.
+
+A navy panel at the top center shows the phase and its countdown, with the
+current leader underneath during a round. Below it, a kill feed lists the last
+four eliminations for everyone in the server and outlines your own in gold. When
+you die, the screen dims and shows who eliminated you and the respawn countdown.
+Round state replicates through attributes on `ReplicatedStorage.MatchState`; the
+`KillFeed` remote is server-to-client only.
+
+Spawn protection comes from each SpawnLocation's 2-second ForceField, which the
+server now removes as soon as the protected player fires.
+
+Run `luau tests/MatchRules.spec.luau` for the winner and tie-break checks. In
+Studio, use Start Server with two or three players: check warmup with one
+player, the intermission countdown, kills and deaths in the player list, the
+kill feed and death screen, reaching 20 kills (lower `KILL_TARGET` to test
+quickly), the time-up winner, a tie, and a player leaving mid-round.
+
+## Saved stats
+
+Lifetime Kills, Deaths, Wins, and MatchesPlayed are saved to the `PlayerStats`
+DataStore under `player_<UserId>`. Each server saves only the increments it
+earned, added with `UpdateAsync`, so a player hopping between servers never
+loses progress to an older copy. Stats save every 90 seconds, when a player
+leaves, and on server shutdown; failed saves are retried and kept for the next
+attempt. Loaded records are validated, and missing or invalid fields default to
+zero. The schema is in `src/server/PlayerDataSchema.luau`; run
+`luau tests/PlayerDataSchema.spec.luau` for its checks.
+
+In Studio, saving requires **Game Settings → Security → Enable Studio Access to
+API Services** on a published place. Without it the server warns once and the
+game runs normally without saving.
+
+## Publishing checklist
+
+1. Publish the place, then in Game Settings enable Studio Access to API Services
+   to test saving.
+2. Set **Max Players** to 10 in Game Settings → Places, since the arena is built
+   for 8–10 players.
+3. Make sure the experience owner can access every uploaded asset: the revolver
+   model, card model and artwork, and all SoundIds in `default.project.json`.
+4. Complete the experience questionnaire (content maturity) and set the genre to
+   Fighting/Shooter.
+5. Add an icon and thumbnails, then make the experience public.
+6. Test once in a live server with friends: rounds, saving across rejoins, and
+   mobile controls.
