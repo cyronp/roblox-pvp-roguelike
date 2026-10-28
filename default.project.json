@@ -101,6 +101,12 @@
       },
       "Dash": {
         "$className": "RemoteEvent"
+      },
+      "KillFeed": {
+        "$className": "RemoteEvent"
+      },
+      "MatchState": {
+        "$className": "Folder"
       }
     },
 

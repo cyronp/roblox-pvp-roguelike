@@ -12,7 +12,12 @@ local DamageStreak = require(script:WaitForChild("DamageStreak"))
 local Experience = require(script:WaitForChild("Experience"))
 local Upgrades = require(script:WaitForChild("Upgrades"))
 local RevolverModel = require(script:WaitForChild("RevolverModel"))
+local PlayerData = require(script:WaitForChild("PlayerData"))
+local Match = require(script:WaitForChild("Match"))
 local UpgradeConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UpgradeConfig"))
+
+PlayerData.Start()
+Match.Start()
 
 local RANGE = 300
 
@@ -392,6 +397,9 @@ fireRemote.OnServerEvent:Connect(function(player: Player, tool: unknown, aimPoin
 		hitConfirmedRemote:FireClient(player, tool, feedback.hitCount, feedback.totalDamage, hitTarget, feedback.expiresAt, feedback.duration)
 		if feedback.killed then
 			Experience.AwardKill(player)
+			if hitTarget then
+				Match.CreditKill(player, hitTarget)
+			end
 			killConfirmedRemote:FireClient(player)
 		end
 	end
